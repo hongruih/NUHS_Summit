@@ -41,7 +41,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from collections import Counter
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, send_file, Response
+from flask import Flask, render_template, request, jsonify, send_file, Response, redirect, url_for
 from textblob import TextBlob
 
 APP_TITLE = "AI Perspectives — Live Sentiment Booth"
@@ -410,10 +410,15 @@ def get_turing_stats():
 
 
 # ═══════════════════════════════════════════════════════
-# ROUTES — EXISTING (sentiment)
+# ROUTES — PARTICIPANT LANDING & ADMIN
 # ═══════════════════════════════════════════════════════
 @app.route("/")
-def index():
+def landing():
+    return render_template("landing.html")
+
+
+@app.route("/admin")
+def admin():
     return render_template("admin.html", questions=QUESTIONS, title=APP_TITLE,
                            stop_words=sorted(STOP_WORDS),
                            scenarios=SCENARIOS, job_groups=JOB_GROUPS,
@@ -561,10 +566,15 @@ def api_turing_scenarios():
 
 
 # ═══════════════════════════════════════════════════════
-# QR CODE & STANDALONE SURVEY
+# ROUTES — PARTICIPANT SURVEYS
 # ═══════════════════════════════════════════════════════
 @app.route("/survey")
-def survey_page():
+def survey_redirect():
+    return redirect(url_for("survey_turing"))
+
+
+@app.route("/survey/turing")
+def survey_turing():
     return render_template("survey_turing.html", title=APP_TITLE,
                            scenarios_json=json.dumps([{"id": s["id"], "patient": s["patient"],
                            "responses": s["responses"]} for s in SCENARIOS]),
@@ -572,11 +582,21 @@ def survey_page():
                            trust_tasks=TRUST_TASKS)
 
 
+@app.route("/survey/sentiment")
+def survey_sentiment():
+    return render_template("survey_sentiment.html")
+
+
+@app.route("/survey/acceptance")
+def survey_acceptance():
+    return render_template("survey_acceptance.html")
+
+
 @app.route("/qr")
 def qr_code():
     import qrcode
     host = request.host_url.rstrip("/")
-    url = f"{host}/survey"
+    url = f"{host}/survey/turing"
     img = qrcode.make(url, box_size=10, border=2)
     buf = io.BytesIO()
     img.save(buf, format="PNG")
@@ -693,8 +713,9 @@ if __name__ == "__main__":
     print("=" * 60)
     print(f"  {APP_TITLE}  (v4 — with Turing Test)")
     print("=" * 60)
-    print(f"  Main app:      http://localhost:5001")
-    print(f"  Survey (QR):   http://localhost:5001/survey")
+    print(f"  Landing page:  http://localhost:5001/")
+    print(f"  Admin:         http://localhost:5001/admin")
+    print(f"  Survey/Turing: http://localhost:5001/survey/turing")
     print(f"  QR Code image: http://localhost:5001/qr")
     print(f"  Questions:     {len(QUESTIONS)}")
     print(f"  Scenarios:     {len(SCENARIOS)}")

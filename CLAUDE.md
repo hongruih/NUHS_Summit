@@ -92,8 +92,8 @@ A major refactor is in progress. Steps are being implemented sequentially; each 
 | 5 | Sentiment survey: sequential participant flow, 4 questions, no word cloud | ✅ Done |
 | 6 | Completion modal — skipped (not appropriate for single-survey completion) | Skipped |
 | 7 | AI Acceptance Survey Part A (biographical, multi/single-select) | ✅ Done |
-| 8 | AI Acceptance Survey Parts B–F (Likert scale, 41 questions) | Next |
-| 9 | Admin dashboard: integrate AI Acceptance Survey metrics | — |
+| 8 | AI Acceptance Survey Parts B–F (Likert scale, 41 questions) | ✅ Done |
+| 9 | Admin dashboard: integrate AI Acceptance Survey metrics | Next |
 | 10 | Admin: expandable/modal views for all metric cards | — |
 | 11 | Admin: Turing Test filter by job group | — |
 | 12 | Excel export (`GET /api/export/excel`, 3-sheet `.xlsx`) | — |

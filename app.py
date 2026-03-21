@@ -590,7 +590,7 @@ def survey_sentiment():
 
 @app.route("/survey/acceptance")
 def survey_acceptance():
-    return render_template("survey_acceptance.html", part_a=ACCEPTANCE_PART_A)
+    return render_template("survey_acceptance.html", part_a=ACCEPTANCE_PART_A, likert=ACCEPTANCE_LIKERT)
 
 
 @app.route("/qr")

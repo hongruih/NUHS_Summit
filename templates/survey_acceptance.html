@@ -14,20 +14,20 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
+      justify-content: flex-start;
+      padding: 24px 16px 40px;
       color: #fff;
     }
 
     .survey-wrap {
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
     }
 
     /* ── Header ── */
     .survey-header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     .survey-header h1 {
       font-size: 1.3rem;
@@ -47,8 +47,8 @@
     .progress {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin-bottom: 24px;
+      gap: 7px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
     }
     .dot {
@@ -66,11 +66,12 @@
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
-      padding: 28px 24px;
+      padding: 24px 20px;
     }
 
+    /* ── Shared labels ── */
     .step-label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -78,25 +79,30 @@
       margin-bottom: 10px;
     }
 
+    /* ────────────────────────────────
+       PART A — option buttons
+    ──────────────────────────────── */
     .question-text {
       font-size: 1.05rem;
       font-weight: 600;
       line-height: 1.5;
       color: #e2e8f0;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
-
-    /* ── Option buttons ── */
+    .multi-hint {
+      font-size: 0.75rem;
+      color: #475569;
+      margin-bottom: 10px;
+    }
     .options {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 9px;
+      margin-bottom: 18px;
     }
-
     .opt-btn {
       width: 100%;
-      padding: 13px 16px;
+      padding: 12px 16px;
       background: rgba(255,255,255,0.04);
       border: 1.5px solid rgba(255,255,255,0.1);
       border-radius: 12px;
@@ -105,30 +111,119 @@
       font-size: 0.95rem;
       text-align: left;
       cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
     }
     .opt-btn:hover {
-      background: rgba(168, 85, 247, 0.1);
-      border-color: rgba(168, 85, 247, 0.35);
+      background: rgba(168,85,247,0.1);
+      border-color: rgba(168,85,247,0.35);
       color: #e2e8f0;
     }
     .opt-btn.selected {
-      background: rgba(168, 85, 247, 0.2);
+      background: rgba(168,85,247,0.2);
       border-color: #a855f7;
       color: #fff;
       font-weight: 600;
     }
 
-    .multi-hint {
-      font-size: 0.75rem;
+    /* ────────────────────────────────
+       PART B-F — Likert scale
+    ──────────────────────────────── */
+    .part-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .part-section-sub {
+      font-size: 0.8rem;
       color: #475569;
-      margin-bottom: 12px;
+      margin-bottom: 18px;
     }
 
-    /* ── Navigation ── */
+    /* Scale header row */
+    .scale-header {
+      display: grid;
+      grid-template-columns: 1fr repeat(5, 36px);
+      gap: 4px;
+      align-items: center;
+      padding: 0 0 6px 0;
+      margin-bottom: 2px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .scale-header-blank { /* left spacer */ }
+    .scale-header-num {
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #a855f7;
+    }
+    .scale-ends-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: #475569;
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+
+    /* Each question row */
+    .likert-item {
+      display: grid;
+      grid-template-columns: 1fr repeat(5, 36px);
+      gap: 4px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .likert-item:last-child { border-bottom: none; }
+
+    .likert-q-text {
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+      padding-right: 8px;
+    }
+
+    .likert-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: #64748b;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      padding: 0;
+    }
+    .likert-btn:hover {
+      background: rgba(168,85,247,0.15);
+      border-color: rgba(168,85,247,0.4);
+      color: #e2e8f0;
+    }
+    .likert-btn.selected {
+      background: #a855f7;
+      border-color: #a855f7;
+      color: #fff;
+    }
+
+    /* ── Shared nav ── */
+    .error-msg {
+      color: #f87171;
+      font-size: 0.82rem;
+      margin-bottom: 10px;
+      min-height: 1.2em;
+    }
     .nav-row {
       display: flex;
       gap: 10px;
+      margin-top: 18px;
     }
     .btn-back-step {
       flex: 0 0 auto;
@@ -140,7 +235,7 @@
       font-family: inherit;
       font-size: 1rem;
       cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease;
+      transition: background 0.15s, color 0.15s;
     }
     .btn-back-step:hover { background: rgba(255,255,255,0.08); color: #94a3b8; }
     .btn-back-step:disabled { opacity: 0.2; cursor: not-allowed; }
@@ -162,17 +257,11 @@
     .btn-next:active { transform: scale(0.98); }
     .btn-next:disabled { opacity: 0.35; cursor: not-allowed; }
 
-    .error-msg {
-      color: #f87171;
-      font-size: 0.85rem;
-      margin-bottom: 10px;
-      min-height: 1.2em;
-    }
-
     /* ── Done screen ── */
     #done-screen {
       display: none;
       text-align: center;
+      padding-top: 40px;
     }
     .done-icon { font-size: 3.5rem; margin-bottom: 20px; }
     #done-screen h2 {
@@ -189,8 +278,8 @@
     .btn-back-home {
       display: inline-block;
       padding: 12px 28px;
-      background: rgba(168, 85, 247, 0.15);
-      border: 1px solid rgba(168, 85, 247, 0.35);
+      background: rgba(168,85,247,0.15);
+      border: 1px solid rgba(168,85,247,0.35);
       border-radius: 10px;
       color: #d8b4fe;
       text-decoration: none;
@@ -210,18 +299,15 @@
 
   <div class="progress" id="progress"></div>
 
-  <!-- ── Question screen ── -->
+  <!-- ── Step card ── -->
   <div id="question-screen">
-    <div class="card">
-      <div class="step-label">Question <span id="step-num">1</span> of <span id="step-total"></span></div>
-      <div class="question-text" id="question-text"></div>
-      <div class="multi-hint" id="multi-hint"></div>
-      <div class="options" id="options"></div>
-      <div class="error-msg" id="error-msg"></div>
-      <div class="nav-row">
-        <button class="btn-back-step" id="back-btn" onclick="goBack()" disabled>&#8592;</button>
-        <button class="btn-next" id="next-btn" onclick="goNext()">Next</button>
-      </div>
+    <div class="card" id="step-card">
+      <!-- filled by JS -->
+    </div>
+    <div class="error-msg" id="error-msg"></div>
+    <div class="nav-row">
+      <button class="btn-back-step" id="back-btn" onclick="goBack()" disabled>&#8592;</button>
+      <button class="btn-next" id="next-btn" onclick="goNext()">Next</button>
     </div>
   </div>
 
@@ -236,68 +322,45 @@
 </div><!-- /survey-wrap -->
 
 <script>
-  // Questions injected from server
-  const STEPS = [
-    {
-      key: "age_group",
-      label: "How old are you?",
-      multi: false,
-      options: {{ part_a.age_group | tojson }}
-    },
-    {
-      key: "gender",
-      label: "What is your gender?",
-      multi: false,
-      options: {{ part_a.gender | tojson }}
-    },
-    {
-      key: "disciplines",
-      label: "Which discipline(s) best describe your role?",
-      multi: true,
-      options: {{ part_a.disciplines | tojson }}
-    },
-    {
-      key: "years_healthcare",
-      label: "How many years have you worked in healthcare?",
-      multi: false,
-      options: {{ part_a.years_healthcare | tojson }}
-    },
-    {
-      key: "years_role",
-      label: "How many years have you been in your current role?",
-      multi: false,
-      options: {{ part_a.years_role | tojson }}
-    },
-    {
-      key: "seniority",
-      label: "Which best describes your seniority level?",
-      multi: false,
-      options: {{ part_a.seniority | tojson }}
-    },
-    {
-      key: "ai_frequency",
-      label: "How often do you use AI tools in your work?",
-      multi: false,
-      options: {{ part_a.ai_frequency | tojson }}
-    },
-    {
-      key: "ai_tools",
-      label: "Which AI tools have you used? (Select all that apply)",
-      multi: true,
-      options: {{ part_a.ai_tools | tojson }}
-    }
+  // ── Data from server ──────────────────────────────────
+  const PART_A_STEPS = [
+    { key: "age_group",        label: "How old are you?",                                              multi: false, options: {{ part_a.age_group        | tojson }} },
+    { key: "gender",           label: "What is your gender?",                                          multi: false, options: {{ part_a.gender           | tojson }} },
+    { key: "disciplines",      label: "Which discipline(s) best describe your role?",                  multi: true,  options: {{ part_a.disciplines      | tojson }} },
+    { key: "years_healthcare", label: "How many years have you worked in healthcare?",                  multi: false, options: {{ part_a.years_healthcare | tojson }} },
+    { key: "years_role",       label: "How many years have you been in your current role?",             multi: false, options: {{ part_a.years_role       | tojson }} },
+    { key: "seniority",        label: "Which best describes your seniority level?",                    multi: false, options: {{ part_a.seniority        | tojson }} },
+    { key: "ai_frequency",     label: "How often do you use AI tools in your work?",                   multi: false, options: {{ part_a.ai_frequency     | tojson }} },
+    { key: "ai_tools",         label: "Which AI tools have you used? (Select all that apply)",         multi: true,  options: {{ part_a.ai_tools         | tojson }} }
   ];
 
-  const TOTAL = STEPS.length;
+  // Build Likert steps from server data: array of {part, title, questions:[{key,text}]}
+  const LIKERT_PARTS = [
+    {% for part_key, part_val in likert.items() %}
+    {
+      part: {{ part_key | tojson }},
+      title: {{ part_val.title | tojson }},
+      questions: [
+        {% for q_key, q_text in part_val.questions.items() %}
+        { key: {{ q_key | tojson }}, text: {{ q_text | tojson }} }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  const TOTAL_STEPS = PART_A_STEPS.length + LIKERT_PARTS.length; // 13
   let step = 0;
-  // answers[key] = string (single) or array (multi)
-  const answers = {};
+
+  // Answers storage
+  const partAAnswers = {};    // key -> string or [string]
+  const likertAnswers = {};   // key -> 1-5  (e.g. "B1" -> 3)
 
   // ── Progress dots ──────────────────────────────────────
   function buildDots() {
     const c = document.getElementById('progress');
     c.innerHTML = '';
-    for (let i = 0; i < TOTAL; i++) {
+    for (let i = 0; i < TOTAL_STEPS; i++) {
       const d = document.createElement('div');
       d.className = 'dot';
       d.id = 'dot-' + i;
@@ -306,82 +369,150 @@
   }
 
   function updateDots(current) {
-    for (let i = 0; i < TOTAL; i++) {
+    for (let i = 0; i < TOTAL_STEPS; i++) {
       const d = document.getElementById('dot-' + i);
       d.className = 'dot' + (i < current ? ' done' : i === current ? ' active' : '');
     }
   }
 
-  // ── Render step ────────────────────────────────────────
+  // ── Render dispatch ────────────────────────────────────
   function renderStep(i) {
-    const s = STEPS[i];
-    document.getElementById('step-num').textContent = i + 1;
-    document.getElementById('step-total').textContent = TOTAL;
-    document.getElementById('question-text').textContent = s.label;
     document.getElementById('error-msg').textContent = '';
-    document.getElementById('multi-hint').textContent = s.multi ? 'Select all that apply.' : '';
     document.getElementById('back-btn').disabled = (i === 0);
-    document.getElementById('next-btn').textContent = (i === TOTAL - 1) ? 'Submit' : 'Next';
+    document.getElementById('next-btn').textContent = (i === TOTAL_STEPS - 1) ? 'Submit' : 'Next';
     updateDots(i);
+    window.scrollTo(0, 0);
 
-    const saved = answers[s.key];
-    const container = document.getElementById('options');
-    container.innerHTML = '';
+    if (i < PART_A_STEPS.length) {
+      renderPartA(i);
+    } else {
+      renderLikert(i - PART_A_STEPS.length);
+    }
+  }
 
+  // ── Part A rendering ───────────────────────────────────
+  function renderPartA(i) {
+    const s = PART_A_STEPS[i];
+    const saved = partAAnswers[s.key];
+
+    let html = `
+      <div class="step-label">Part A &mdash; About You &nbsp;&middot;&nbsp; Question ${i + 1} of ${PART_A_STEPS.length}</div>
+      <div class="question-text">${escHtml(s.label)}</div>
+      ${s.multi ? '<div class="multi-hint">Select all that apply.</div>' : ''}
+      <div class="options" id="options-container"></div>
+    `;
+    document.getElementById('step-card').innerHTML = html;
+
+    const container = document.getElementById('options-container');
     s.options.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'opt-btn';
       btn.textContent = opt;
-
-      const isSelected = s.multi
+      const isSel = s.multi
         ? (Array.isArray(saved) && saved.includes(opt))
         : (saved === opt);
-      if (isSelected) btn.classList.add('selected');
-
-      btn.onclick = () => selectOption(s.key, opt, s.multi, btn);
+      if (isSel) btn.classList.add('selected');
+      btn.onclick = () => selectPartA(s.key, opt, s.multi, btn);
       container.appendChild(btn);
     });
   }
 
-  function selectOption(key, value, multi, btn) {
+  function selectPartA(key, value, multi, btn) {
     if (multi) {
-      const current = Array.isArray(answers[key]) ? answers[key] : [];
-      const idx = current.indexOf(value);
+      const cur = Array.isArray(partAAnswers[key]) ? partAAnswers[key] : [];
+      const idx = cur.indexOf(value);
       if (idx === -1) {
-        answers[key] = [...current, value];
+        partAAnswers[key] = [...cur, value];
         btn.classList.add('selected');
       } else {
-        answers[key] = current.filter(v => v !== value);
+        partAAnswers[key] = cur.filter(v => v !== value);
         btn.classList.remove('selected');
       }
     } else {
-      answers[key] = value;
-      // Deselect all, select this one
-      document.querySelectorAll('#options .opt-btn').forEach(b => b.classList.remove('selected'));
+      partAAnswers[key] = value;
+      document.querySelectorAll('#options-container .opt-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
+    }
+  }
+
+  // ── Likert rendering ───────────────────────────────────
+  function renderLikert(li) {
+    const part = LIKERT_PARTS[li];
+    const globalStep = PART_A_STEPS.length + li;
+
+    let html = `
+      <div class="step-label">Part ${part.part} &mdash; ${PART_A_STEPS.length + li + 1} of ${TOTAL_STEPS}</div>
+      <div class="part-section-title">${escHtml(part.title)}</div>
+      <div class="part-section-sub">Rate each statement: 1 = Strongly Disagree &rarr; 5 = Strongly Agree</div>
+
+      <div class="scale-header">
+        <div class="scale-header-blank"></div>
+        <div class="scale-header-num">1</div>
+        <div class="scale-header-num">2</div>
+        <div class="scale-header-num">3</div>
+        <div class="scale-header-num">4</div>
+        <div class="scale-header-num">5</div>
+      </div>
+      <div class="scale-ends-row">
+        <span>Strongly Disagree</span>
+        <span>Strongly Agree</span>
+      </div>
+    `;
+
+    part.questions.forEach(q => {
+      const saved = likertAnswers[q.key] || null;
+      const btns = [1,2,3,4,5].map(n =>
+        `<button class="likert-btn${saved === n ? ' selected' : ''}"
+                 onclick="selectLikert('${q.key}', ${n}, this)">${n}</button>`
+      ).join('');
+      html += `
+        <div class="likert-item" id="likert-row-${q.key}">
+          <div class="likert-q-text">${escHtml(q.text)}</div>
+          ${btns}
+        </div>
+      `;
+    });
+
+    document.getElementById('step-card').innerHTML = html;
+  }
+
+  function selectLikert(key, value, btn) {
+    likertAnswers[key] = value;
+    // Deselect siblings in same row
+    const row = document.getElementById('likert-row-' + key);
+    row.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+
+  // ── Validation ─────────────────────────────────────────
+  function validateStep(i) {
+    if (i < PART_A_STEPS.length) {
+      const s = PART_A_STEPS[i];
+      const val = partAAnswers[s.key];
+      return s.multi ? (Array.isArray(val) && val.length > 0) : !!val;
+    } else {
+      const part = LIKERT_PARTS[i - PART_A_STEPS.length];
+      return part.questions.every(q => likertAnswers[q.key] != null);
     }
   }
 
   // ── Navigation ─────────────────────────────────────────
   function goBack() {
-    if (step > 0) {
-      step--;
-      renderStep(step);
-    }
+    if (step > 0) { step--; renderStep(step); }
   }
 
   function goNext() {
-    const s = STEPS[step];
-    const val = answers[s.key];
-    const hasAnswer = s.multi ? (Array.isArray(val) && val.length > 0) : !!val;
-
-    if (!hasAnswer) {
-      document.getElementById('error-msg').textContent = 'Please make a selection before continuing.';
+    if (!validateStep(step)) {
+      if (step < PART_A_STEPS.length) {
+        document.getElementById('error-msg').textContent = 'Please make a selection before continuing.';
+      } else {
+        document.getElementById('error-msg').textContent = 'Please rate all statements before continuing.';
+      }
       return;
     }
     document.getElementById('error-msg').textContent = '';
 
-    if (step < TOTAL - 1) {
+    if (step < TOTAL_STEPS - 1) {
       step++;
       renderStep(step);
     } else {
@@ -393,20 +524,20 @@
   async function submitSurvey() {
     const btn = document.getElementById('next-btn');
     btn.disabled = true;
-    btn.textContent = 'Saving…';
+    btn.textContent = 'Saving\u2026';
 
     const payload = {
       part_a: {
-        age_group:        answers.age_group        || null,
-        gender:           answers.gender           || null,
-        disciplines:      answers.disciplines      || [],
-        years_healthcare: answers.years_healthcare || null,
-        years_role:       answers.years_role       || null,
-        seniority:        answers.seniority        || null,
-        ai_frequency:     answers.ai_frequency     || null,
-        ai_tools:         answers.ai_tools         || []
+        age_group:        partAAnswers.age_group        || null,
+        gender:           partAAnswers.gender           || null,
+        disciplines:      partAAnswers.disciplines      || [],
+        years_healthcare: partAAnswers.years_healthcare || null,
+        years_role:       partAAnswers.years_role       || null,
+        seniority:        partAAnswers.seniority        || null,
+        ai_frequency:     partAAnswers.ai_frequency     || null,
+        ai_tools:         partAAnswers.ai_tools         || []
       },
-      likert_answers: {}
+      likert_answers: likertAnswers
     };
 
     try {
@@ -418,12 +549,18 @@
       if (!resp.ok) throw new Error('Server error');
       document.getElementById('question-screen').style.display = 'none';
       document.getElementById('done-screen').style.display = 'block';
-      updateDots(TOTAL);
+      updateDots(TOTAL_STEPS);
+      window.scrollTo(0, 0);
     } catch (e) {
       document.getElementById('error-msg').textContent = 'Something went wrong. Please try again.';
       btn.disabled = false;
       btn.textContent = 'Submit';
     }
+  }
+
+  // ── Utility ────────────────────────────────────────────
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   // ── Init ───────────────────────────────────────────────

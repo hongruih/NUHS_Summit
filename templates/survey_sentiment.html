@@ -314,71 +314,6 @@
       font-weight: 600;
       font-size: 0.95rem;
     }
-
-    /* ── Completion modal ── */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(10, 14, 26, 0.85);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      animation: fade-in 0.4s ease;
-    }
-    .modal-overlay.show { display: flex; }
-    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-
-    .modal-card {
-      background: linear-gradient(135deg, #1e1b4b, #0f172a);
-      border: 1px solid rgba(129, 140, 248, 0.3);
-      border-radius: 24px;
-      padding: 40px 32px;
-      text-align: center;
-      max-width: 360px;
-      width: 100%;
-      animation: pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    @keyframes pop-in {
-      from { opacity: 0; transform: scale(0.85); }
-      to   { opacity: 1; transform: scale(1); }
-    }
-    .modal-icon { font-size: 4rem; margin-bottom: 16px; }
-    .modal-card h2 {
-      font-size: 2rem;
-      font-weight: 800;
-      background: linear-gradient(90deg, #818cf8, #c084fc, #f472b6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 12px;
-    }
-    .modal-card .gift-text {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #e2e8f0;
-      line-height: 1.5;
-      margin-bottom: 8px;
-    }
-    .modal-card .stock-note {
-      font-size: 0.82rem;
-      color: #64748b;
-      margin-bottom: 28px;
-    }
-    .modal-back {
-      display: inline-block;
-      padding: 12px 28px;
-      background: rgba(99, 102, 241, 0.15);
-      border: 1px solid rgba(99, 102, 241, 0.35);
-      border-radius: 10px;
-      color: #a5b4fc;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
   </style>
 </head>
 <body>
@@ -445,15 +380,12 @@
     </div>
   </div>
 
-  <!-- ── Completion modal ── -->
-  <div class="modal-overlay" id="completion-modal">
-    <div class="modal-card">
-      <div class="modal-icon">🎁</div>
-      <h2>Thank you!</h2>
-      <p class="gift-text">Please approach our booth<br>for a <strong>free gift!</strong></p>
-      <p class="stock-note">(While stocks last)</p>
-      <a class="modal-back" href="/">← Back to Surveys</a>
-    </div>
+  <!-- ── Done screen ── -->
+  <div id="done-screen">
+    <div class="done-icon">✅</div>
+    <h2>Thank you!</h2>
+    <p>Your responses have been recorded.<br>We appreciate your input.</p>
+    <a class="btn-back" href="/">← Back to Surveys</a>
   </div>
 
 </div><!-- /survey-wrap -->
@@ -582,6 +514,7 @@
 
     document.getElementById('asking-screen').style.display = 'block';
     document.getElementById('sentiment-screen').style.display = 'none';
+    document.getElementById('done-screen').style.display = 'none';
 
     // Auto-start mic on first load if supported
     if (HAS_SPEECH && i === 0) {
@@ -654,8 +587,8 @@
       if (HAS_SPEECH) startSpeech();
     } else {
       document.getElementById('sentiment-screen').style.display = 'none';
+      document.getElementById('done-screen').style.display = 'block';
       updateDots(QUESTIONS.length);
-      document.getElementById('completion-modal').classList.add('show');
     }
   }
 

@@ -177,10 +177,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 
 @keyframes fi{from{opacity:0}to{opacity:1}}
 @keyframes si{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:900px){.ip,.ov-grid,.dbd,.tt-grid{grid-template-columns:1fr}.ov-wc-row{grid-template-columns:1fr}.ip-l{border-right:none;border-bottom:1px solid var(--bd)}.dwc{border-right:none;border-bottom:1px solid var(--bd)}.pqg{grid-template-columns:1fr}.ts-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.ip,.ov-grid,.dbd,.tt-grid{grid-template-columns:1fr}.ov-wc-row{grid-template-columns:1fr}.ip-l{border-right:none;border-bottom:1px solid var(--bd)}.dwc{border-right:none;border-bottom:1px solid var(--bd)}.pqg{grid-template-columns:1fr}.ts-grid{grid-template-columns:repeat(2,1fr)}.ac-demo-grid{grid-template-columns:1fr!important}.ac-q-row{grid-template-columns:26px 1fr 120px!important}}
+
+/* ═══ AI ACCEPTANCE TAB ═══ */
+.tab.ac{color:var(--pu)}.tab.ac.on{color:var(--pu);border-bottom-color:var(--pu)}
+.ac-wrap{padding:24px 28px;max-width:1100px;margin:0 auto}
+.ac-section{margin-bottom:24px}
+.ac-sec-title{font-size:.7rem;font-weight:700;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--pu);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.ac-demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.ac-demo-card{border-radius:var(--rs);border:1px solid var(--bd);background:var(--c1);padding:12px}
+.ac-demo-card h4{font-size:.6rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:8px}
+.ac-dist-row{margin-bottom:5px}
+.ac-dist-label{display:flex;justify-content:space-between;font-size:.68rem;color:var(--t2);margin-bottom:2px}
+.ac-dist-bar{height:5px;border-radius:3px;background:var(--c2);overflow:hidden}
+.ac-dist-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--pu),var(--pk));transition:width .5s}
+.ac-likert-card{border-radius:var(--r);border:1px solid rgba(168,85,247,.15);background:var(--c1);padding:14px 16px;margin-bottom:12px}
+.ac-likert-title{font-size:.68rem;font-weight:700;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.07em;color:var(--pu);margin-bottom:10px}
+.ac-q-row{display:grid;grid-template-columns:30px 1fr 160px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.ac-q-row:last-child{border-bottom:none}
+.ac-q-key{font-size:.62rem;font-family:'Space Mono',monospace;color:var(--t3)}
+.ac-q-text{font-size:.72rem;color:var(--t2);line-height:1.35}
+.ac-q-bar-wrap{display:flex;align-items:center;gap:6px}
+.ac-q-bar-track{flex:1;height:7px;border-radius:4px;background:var(--c2);overflow:hidden}
+.ac-q-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.ac-q-score{font-size:.7rem;font-weight:700;font-family:'Space Mono',monospace;width:28px;text-align:right;flex-shrink:0}
 </style></head><body>
 
-<header class="hdr"><h1>{{ title }}</h1><div class="pills"><span class="pill" id="totPill">0 responses</span><span class="pill" id="ttPill" style="border-color:var(--pk);color:var(--pk)">0 survey</span><span class="pill on" id="stPill">● Ready</span></div></header>
+<header class="hdr"><h1>{{ title }}</h1><div class="pills"><span class="pill" id="totPill">0 responses</span><span class="pill" id="ttPill" style="border-color:var(--pk);color:var(--pk)">0 turing</span><span class="pill" id="acPill" style="border-color:var(--pu);color:var(--pu)">0 acceptance</span><span class="pill on" id="stPill">● Ready</span></div></header>
 
 <nav class="tabs">
 <button class="tab ov on" onclick="go('ov')">📊 Live Overview</button>
@@ -189,6 +212,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 <button class="tab" onclick="go('q2')">Q3 — Input</button>
 <button class="tab dt" onclick="go('dash')">Per-Question Dashboard</button>
 <button class="tab tt" onclick="go('turing')">🤖 AI vs Human</button>
+<button class="tab ac" onclick="go('accept')">📋 AI Acceptance</button>
 </nav>
 
 <!-- ══════ OVERVIEW ══════ -->
@@ -297,6 +321,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
       <div class="tt-qr"><img src="/qr" alt="QR code to survey"><p>Scan to take the survey on your phone</p><p style="font-size:.65rem;color:var(--t3)"><a href="/survey" target="_blank" style="color:var(--pk)">/survey</a></p></div>
     </div>
   </div>
+</div>
+</div></div>
+
+<!-- ══════ AI ACCEPTANCE DASHBOARD ══════ -->
+<div class="pnl" id="pnl_accept"><div class="ac-wrap">
+<div class="ov-title"><b style="color:var(--pu)">📋 AI Acceptance Survey</b> — Respondent metrics · <span style="font-size:.7rem;color:var(--t3)">Auto-refreshes every 3s</span></div>
+<div class="tt-hero" style="margin-bottom:20px">
+  <div class="tt-big" style="border-color:rgba(168,85,247,.2)"><span class="n" style="color:var(--pu)" id="acTot">0</span><span class="l">Total Respondents</span></div>
+</div>
+<div class="ac-section">
+  <div class="ac-sec-title">Part A — Demographics</div>
+  <div class="ac-demo-grid" id="acDemoGrid"><div class="ov-empty" style="padding:20px">No responses yet</div></div>
+</div>
+<div class="ac-section">
+  <div class="ac-sec-title">Parts B–F — Likert Averages &nbsp;(1 = Strongly Disagree → 5 = Strongly Agree)</div>
+  <div id="acLikertSection"><div class="ov-empty" style="padding:20px">No responses yet</div></div>
 </div>
 </div></div>
 
@@ -430,9 +470,10 @@ function go(id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   $('pnl_'+id).classList.add('on');
   let tabs=document.querySelectorAll('.tab');
-  let m={ov:0,q0:1,q1:2,q2:3,dash:4,turing:5};
+  let m={ov:0,q0:1,q1:2,q2:3,dash:4,turing:5,accept:6};
   if(m[id]!==undefined)tabs[m[id]].classList.add('on');
   if(id==='ov')loadOv();else if(id==='dash')loadDash();else if(id==='turing')loadTuring();
+  else if(id==='accept')loadAccept();
   else loadQ(+id.replace('q',''));
 }
 
@@ -561,10 +602,52 @@ async function loadTuring(){
 
 
 async function updTot(){
-  try{let d=await(await fetch('/api/all')).json(),t=d.agg.stats.total,tt=d.turing.total_respondents;
-    $('totPill').textContent=t+' responses';$('ttPill').textContent=tt+' survey';
-    $('totC').textContent=`Total: ${t} responses · ${tt} survey respondents`;
+  try{let d=await(await fetch('/api/all')).json(),t=d.agg.stats.total,tt=d.turing.total_respondents,ta=d.acceptance_survey?d.acceptance_survey.total_respondents:0;
+    $('totPill').textContent=t+' responses';$('ttPill').textContent=tt+' turing';$('acPill').textContent=ta+' acceptance';
+    $('totC').textContent=`Total: ${t} responses · ${tt} turing · ${ta} acceptance`;
   }catch(e){}
+}
+
+async function loadAccept(){
+  try{
+    let d=await(await fetch('/api/acceptance/stats')).json();
+    $('acTot').textContent=d.total_respondents;
+    if(d.total_respondents===0){
+      $('acDemoGrid').innerHTML='<div class="ov-empty" style="padding:20px">No responses yet</div>';
+      $('acLikertSection').innerHTML='<div class="ov-empty" style="padding:20px">No responses yet</div>';
+      return;
+    }
+    // ── Part A demographics ──────────────────────────────
+    const DEMO_LABELS={age_group:'Age Group',gender:'Gender',disciplines:'Disciplines',years_healthcare:'Years in Healthcare',years_role:'Years in Current Role',seniority:'Seniority',ai_frequency:'AI Usage Frequency',ai_tools:'AI Tools Used'};
+    let demoHTML='';
+    for(let[field,label]of Object.entries(DEMO_LABELS)){
+      const counts=d.part_a[field]||{};
+      const total=Object.values(counts).reduce((a,b)=>a+b,0);
+      if(!total)continue;
+      let rows='';
+      for(let[opt,n]of Object.entries(counts)){
+        const pct=(n/total*100).toFixed(0);
+        rows+=`<div class="ac-dist-row"><div class="ac-dist-label"><span>${opt}</span><span>${n} (${pct}%)</span></div><div class="ac-dist-bar"><div class="ac-dist-fill" style="width:${pct}%"></div></div></div>`;
+      }
+      demoHTML+=`<div class="ac-demo-card"><h4>${label}</h4>${rows}</div>`;
+    }
+    $('acDemoGrid').innerHTML=demoHTML||'<div class="ov-empty" style="padding:20px">No demographic data</div>';
+    // ── Likert B–F ──────────────────────────────────────
+    const PART_COLORS={B:'var(--pu)',C:'var(--pk)',D:'var(--bl)',E:'var(--gn)',F:'var(--am)'};
+    let likertHTML='';
+    for(let[part,pd]of Object.entries(d.likert_averages)){
+      const col=PART_COLORS[part]||'var(--pu)';
+      let rows='';
+      for(let[key,q]of Object.entries(pd.questions)){
+        const avg=q.avg;
+        const pct=avg?((avg-1)/4*100).toFixed(1):0;
+        const barCol=!avg?'#334155':avg>=3.5?'#22c55e':avg>=2.5?'#f59e0b':'#ef4444';
+        rows+=`<div class="ac-q-row"><span class="ac-q-key">${key}</span><div class="ac-q-text">${q.question}</div><div class="ac-q-bar-wrap"><div class="ac-q-bar-track"><div class="ac-q-bar-fill" style="width:${pct}%;background:${barCol}"></div></div><span class="ac-q-score" style="color:${barCol}">${avg?avg.toFixed(1):'—'}</span></div></div>`;
+      }
+      likertHTML+=`<div class="ac-likert-card" style="border-color:${col}33"><div class="ac-likert-title" style="color:${col}">Part ${part} &mdash; ${pd.title}</div>${rows}</div>`;
+    }
+    $('acLikertSection').innerHTML=likertHTML||'<div class="ov-empty" style="padding:20px">No Likert data yet</div>';
+  }catch(e){console.error('loadAccept error:',e)}
 }
 
 async function rst(){if(!confirm('Reset ALL data (sentiment + survey)?'))return;await fetch('/api/reset',{method:'POST'});for(let q=0;q<QN;q++)loadQ(q);loadOv();loadDash();loadTuring();updTot()}
@@ -575,6 +658,7 @@ setInterval(()=>{
   if(currentPanel==='ov')loadOv();
   else if(currentPanel==='dash')loadDash();
   else if(currentPanel==='turing')loadTuring();
+  else if(currentPanel==='accept')loadAccept();
   else if(currentPanel.startsWith('q'))loadQ(+currentPanel.replace('q',''));
   updTot();
 },3000);

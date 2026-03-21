@@ -48,7 +48,8 @@ APP_TITLE = "AI Perspectives — Live Sentiment Booth"
 QUESTIONS = [
     "What changes, if any, do you anticipate AI bringing to your work?",
     "What would make you more confident or willing to use AI tools in your daily practice?",
-    "Is there anything else you would like to share about AI in healthcare?",
+    "What concerns, if any, do you have about the use of AI in healthcare?",
+    "How do you think AI could best support — rather than replace — the human elements of healthcare?",
 ]
 STOP_WORDS = set("i me my myself we our ours ourselves you your yours yourself yourselves "
     "he him his himself she her hers herself it its itself they them their theirs "
@@ -457,13 +458,13 @@ def api_q(q):
 @app.route("/api/all")
 def api_all():
     r = {}
-    for i in range(3):
+    for i in range(len(QUESTIONS)):
         entries = get_entries(i)
         texts = [e["text"] for e in entries]
         r[str(i)] = {"words": extract_words(texts) if texts else [],
                       "stats": stats_for(entries), "entries": entries[-10:]}
     ae = []
-    for i in range(3):
+    for i in range(len(QUESTIONS)):
         ae.extend(get_entries(i))
     at = [e["text"] for e in ae]
     r["agg"] = {"words": extract_words(at) if at else [], "stats": stats_for(ae)}
@@ -488,7 +489,7 @@ def api_reset():
 @app.route("/api/export")
 def api_export():
     data = {}
-    for i in range(3):
+    for i in range(len(QUESTIONS)):
         data[QUESTIONS[i]] = get_entries(i)
     data["turing_test"] = get_turing_stats()
     data["acceptance_survey"] = api_acceptance_stats().get_json()
@@ -584,7 +585,7 @@ def survey_turing():
 
 @app.route("/survey/sentiment")
 def survey_sentiment():
-    return render_template("survey_sentiment.html")
+    return render_template("survey_sentiment.html", questions=QUESTIONS)
 
 
 @app.route("/survey/acceptance")

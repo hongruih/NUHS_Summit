@@ -89,8 +89,8 @@ A major refactor is in progress. Steps are being implemented sequentially; each 
 | 2 | Refactor templates into `templates/` directory; routes use `render_template()` | ✅ Done |
 | 3 | Add AI Acceptance Survey DB table (`acceptance_responses`) and API endpoints (`POST /api/acceptance/submit`, `GET /api/acceptance/stats`) | ✅ Done |
 | 4 | Participant landing page at `/`; admin moves to `/admin`; routing split for all survey URLs | ✅ Done |
-| 5 | Sentiment survey: sequential participant flow, 4 questions, no word cloud | Next |
-| 6 | Completion modal ("Thank you! Please approach our booth for a free gift!") | — |
+| 5 | Sentiment survey: sequential participant flow, 4 questions, no word cloud | ✅ Done |
+| 6 | Completion modal ("Thank you! Please approach our booth for a free gift!") | Next |
 | 7 | AI Acceptance Survey Part A (biographical, multi/single-select) | — |
 | 8 | AI Acceptance Survey Parts B–F (Likert scale, 41 questions) | — |
 | 9 | Admin dashboard: integrate AI Acceptance Survey metrics | — |

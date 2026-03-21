@@ -37,6 +37,8 @@
 """
 
 import os, io, re, base64, json, sqlite3, uuid
+from dotenv import load_dotenv
+load_dotenv()
 from collections import Counter
 from datetime import datetime
 from flask import Flask, render_template_string, request, jsonify, send_file, Response
@@ -129,7 +131,7 @@ TRUST_TASKS = ["Triaging symptoms", "Drafting clinical notes", "Patient educatio
 # ═══════════════════════════════════════════════════════
 # DATABASE SETUP
 # ═══════════════════════════════════════════════════════
-DB_PATH = "booth_data.db"
+DB_PATH = os.environ.get("DATABASE_PATH", "booth_data.db")
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -1320,4 +1322,6 @@ if __name__ == "__main__":
     print(f"  Scenarios:     {len(SCENARIOS)}")
     print(f"  Database:      {DB_PATH} (SQLite, persists)")
     print("=" * 60)
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    port = int(os.environ.get("PORT", 5001))
+    debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=port, debug=debug)

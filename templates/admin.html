@@ -202,6 +202,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .ac-q-bar-fill{height:100%;border-radius:4px;transition:width .5s}
 .ac-q-score{font-size:.7rem;font-weight:700;font-family:'Space Mono',monospace;width:28px;text-align:right;flex-shrink:0}
 
+/* ═══ TURING FILTER ═══ */
+.tt-filter{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:10px 14px;border-radius:var(--rs);background:var(--c1);border:1px solid var(--bd)}
+.tt-filter-label{font-size:.62rem;font-family:'Space Mono',monospace;color:var(--t3);white-space:nowrap;margin-right:2px}
+.tt-fpill{font-family:'DM Sans',sans-serif;font-size:.7rem;padding:4px 11px;border-radius:20px;border:1px solid var(--bd);background:0;color:var(--t3);cursor:pointer;transition:.2s;white-space:nowrap}
+.tt-fpill:hover{color:var(--t1);border-color:var(--t2)}
+.tt-fpill.on{border-color:var(--pk);color:var(--pk);background:rgba(236,72,153,.08)}
+.tt-filter-badge{font-family:'Space Mono',monospace;font-size:.62rem;padding:2px 8px;border-radius:10px;background:rgba(236,72,153,.15);color:var(--pk);margin-left:auto;white-space:nowrap}
+
 /* ═══ MODAL ═══ */
 #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:999;align-items:center;justify-content:center;padding:20px}
 #modal.on{display:flex}
@@ -295,6 +303,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 <!-- ══════ TURING TEST DASHBOARD ══════ -->
 <div class="pnl" id="pnl_turing"><div class="tt-wrap">
 <div class="ov-title"><b style="color:var(--pk)">🤖 AI vs Human</b> — Can clinicians tell the difference? · <span style="font-size:.7rem;color:var(--t3)">Auto-refreshes every 3s</span></div>
+
+<!-- Job group filter -->
+<div class="tt-filter">
+  <span class="tt-filter-label">Filter by group:</span>
+  <button class="tt-fpill on" id="jgf_all" onclick="setTuringFilter(null)">All Groups</button>
+  {% for jg in job_groups %}<button class="tt-fpill" data-jg="{{ jg }}" onclick="setTuringFilter(this.dataset.jg)">{{ jg }}</button>{% endfor %}
+  <span class="tt-filter-badge" id="ttFilterBadge" style="display:none"></span>
+</div>
 
 <!-- QR + hero stats -->
 <div class="tt-hero">
@@ -576,6 +592,23 @@ async function loadDash(){
 }
 
 // ════════════════════════════════════════════════════════
+// TURING TEST FILTER
+// ════════════════════════════════════════════════════════
+let turingFilter=null;
+function setTuringFilter(jg){
+  turingFilter=jg;
+  document.querySelectorAll('.tt-fpill').forEach(p=>p.classList.remove('on'));
+  if(jg===null){
+    $('jgf_all').classList.add('on');
+    $('ttFilterBadge').style.display='none';
+  }else{
+    document.querySelectorAll('.tt-fpill').forEach(p=>{if(p.textContent.trim()===jg)p.classList.add('on')});
+    $('ttFilterBadge').textContent='Filtered: '+jg;$('ttFilterBadge').style.display='';
+  }
+  loadTuring();
+}
+
+// ════════════════════════════════════════════════════════
 // TURING TEST DASHBOARD RENDERER
 // ════════════════════════════════════════════════════════
 function makeAccBar(label,accuracy,color){
@@ -584,7 +617,8 @@ function makeAccBar(label,accuracy,color){
 
 async function loadTuring(){
   try{
-    let d=await(await fetch('/api/turing/stats')).json();
+    const url=turingFilter?`/api/turing/stats?job_group=${encodeURIComponent(turingFilter)}`:'/api/turing/stats';
+    let d=await(await fetch(url)).json();
     $('ttTot').textContent=d.total_respondents;
     $('ttAcc').textContent=d.overall_accuracy+'%';
     $('ttFool').textContent=d.total_respondents>0?Math.round(100-d.overall_accuracy)+'%':'0%';

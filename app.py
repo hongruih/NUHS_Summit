@@ -334,64 +334,102 @@ def stats_for(entries):
 # ═══════════════════════════════════════════════════════
 # TURING TEST ANALYTICS
 # ═══════════════════════════════════════════════════════
-def get_turing_stats():
+def get_turing_stats(job_group=None):
     conn = get_db()
-    total_respondents = conn.execute("SELECT COUNT(*) as c FROM turing_responses").fetchone()["c"]
+    jg = job_group  # shorthand
+
+    # Total respondents (filtered)
+    if jg:
+        total_respondents = conn.execute(
+            "SELECT COUNT(*) as c FROM turing_responses WHERE job_group=?", (jg,)).fetchone()["c"]
+    else:
+        total_respondents = conn.execute("SELECT COUNT(*) as c FROM turing_responses").fetchone()["c"]
+
+    # By job group — always unfiltered so comparison bars always show all groups
+    by_job = {}
+    for g in JOB_GROUPS:
+        r = conn.execute("""SELECT COUNT(a.id) as total, SUM(a.correct) as cs
+            FROM turing_answers a JOIN turing_responses r ON a.respondent_id=r.respondent_id
+            WHERE r.job_group=?""", (g,)).fetchone()
+        t, c = r["total"] or 0, r["cs"] or 0
+        if t > 0:
+            by_job[g] = {"total": t, "correct": c, "accuracy": round(c / t * 100, 1),
+                         "fooled_pct": round((t - c) / t * 100, 1)}
+
     if total_respondents == 0:
         conn.close()
-        return {"total_respondents": 0, "overall_accuracy": 0, "by_job_group": {}, "by_seniority": {},
-                "by_scenario": {}, "avg_ratings": {}, "trust_tasks": {}, "respondents_list": []}
+        return {"total_respondents": 0, "overall_accuracy": 0, "total_answers": 0, "total_correct": 0,
+                "by_job_group": by_job, "by_seniority": {}, "by_scenario": {},
+                "avg_ratings": {}, "trust_tasks": {}, "respondents_list": []}
 
-    # Overall accuracy
-    total_answers = conn.execute("SELECT COUNT(*) as c FROM turing_answers").fetchone()["c"]
-    total_correct = conn.execute("SELECT COUNT(*) as c FROM turing_answers WHERE correct=1").fetchone()["c"]
-    overall_accuracy = round(total_correct / total_answers * 100, 1) if total_answers else 0
-
-    # By job group
-    by_job = {}
-    for jg in JOB_GROUPS:
-        rows = conn.execute("""
-            SELECT COUNT(a.id) as total, SUM(a.correct) as correct_sum
+    # Overall accuracy (filtered)
+    if jg:
+        r = conn.execute("""SELECT COUNT(a.id) as total, SUM(a.correct) as cs
             FROM turing_answers a JOIN turing_responses r ON a.respondent_id=r.respondent_id
             WHERE r.job_group=?""", (jg,)).fetchone()
-        t, c = rows["total"] or 0, rows["correct_sum"] or 0
-        if t > 0:
-            by_job[jg] = {"total": t, "correct": c, "accuracy": round(c / t * 100, 1),
-                          "fooled_pct": round((t - c) / t * 100, 1)}
+        total_answers, total_correct = r["total"] or 0, r["cs"] or 0
+    else:
+        total_answers = conn.execute("SELECT COUNT(*) as c FROM turing_answers").fetchone()["c"]
+        total_correct = conn.execute("SELECT COUNT(*) as c FROM turing_answers WHERE correct=1").fetchone()["c"]
+    overall_accuracy = round(total_correct / total_answers * 100, 1) if total_answers else 0
 
-    # By seniority
+    # By seniority (filtered)
     by_sen = {}
     for sl in SENIORITY_LEVELS:
-        rows = conn.execute("""
-            SELECT COUNT(a.id) as total, SUM(a.correct) as correct_sum
-            FROM turing_answers a JOIN turing_responses r ON a.respondent_id=r.respondent_id
-            WHERE r.seniority=?""", (sl,)).fetchone()
-        t, c = rows["total"] or 0, rows["correct_sum"] or 0
+        if jg:
+            r = conn.execute("""SELECT COUNT(a.id) as total, SUM(a.correct) as cs
+                FROM turing_answers a JOIN turing_responses r ON a.respondent_id=r.respondent_id
+                WHERE r.seniority=? AND r.job_group=?""", (sl, jg)).fetchone()
+        else:
+            r = conn.execute("""SELECT COUNT(a.id) as total, SUM(a.correct) as cs
+                FROM turing_answers a JOIN turing_responses r ON a.respondent_id=r.respondent_id
+                WHERE r.seniority=?""", (sl,)).fetchone()
+        t, c = r["total"] or 0, r["cs"] or 0
         if t > 0:
             by_sen[sl] = {"total": t, "correct": c, "accuracy": round(c / t * 100, 1),
                           "fooled_pct": round((t - c) / t * 100, 1)}
 
-    # By scenario
+    # By scenario (filtered)
     by_sc = {}
     for sc in SCENARIOS:
-        rows = conn.execute("SELECT COUNT(*) as total, SUM(correct) as correct_sum FROM turing_answers WHERE scenario_id=?",
-                            (sc["id"],)).fetchone()
-        t, c = rows["total"] or 0, rows["correct_sum"] or 0
+        if jg:
+            r = conn.execute("""SELECT COUNT(a.id) as total, SUM(a.correct) as cs
+                FROM turing_answers a JOIN turing_responses r ON a.respondent_id=r.respondent_id
+                WHERE a.scenario_id=? AND r.job_group=?""", (sc["id"], jg)).fetchone()
+        else:
+            r = conn.execute("SELECT COUNT(*) as total, SUM(correct) as cs FROM turing_answers WHERE scenario_id=?",
+                             (sc["id"],)).fetchone()
+        t, c = r["total"] or 0, r["cs"] or 0
         if t > 0:
             by_sc[sc["id"]] = {"total": t, "correct": c, "accuracy": round(c / t * 100, 1)}
 
-    # Average ratings
-    rat = conn.execute("""SELECT AVG(rating_trust) as t, AVG(rating_empathy) as e,
-                          AVG(rating_safety) as s, AVG(rating_usefulness) as u FROM turing_answers""").fetchone()
+    # Average ratings (filtered)
+    if jg:
+        rat = conn.execute("""SELECT AVG(a.rating_trust) as t, AVG(a.rating_empathy) as e,
+                              AVG(a.rating_safety) as s, AVG(a.rating_usefulness) as u
+                              FROM turing_answers a JOIN turing_responses r ON a.respondent_id=r.respondent_id
+                              WHERE r.job_group=?""", (jg,)).fetchone()
+    else:
+        rat = conn.execute("""SELECT AVG(rating_trust) as t, AVG(rating_empathy) as e,
+                              AVG(rating_safety) as s, AVG(rating_usefulness) as u FROM turing_answers""").fetchone()
     avg_ratings = {"trust": round(rat["t"] or 0, 2), "empathy": round(rat["e"] or 0, 2),
                    "safety": round(rat["s"] or 0, 2), "usefulness": round(rat["u"] or 0, 2)}
 
-    # Trust tasks
-    task_rows = conn.execute("SELECT task, COUNT(*) as c FROM turing_tasks GROUP BY task ORDER BY c DESC").fetchall()
+    # Trust tasks (filtered)
+    if jg:
+        task_rows = conn.execute("""SELECT t.task, COUNT(*) as c FROM turing_tasks t
+            JOIN turing_responses r ON t.respondent_id=r.respondent_id
+            WHERE r.job_group=? GROUP BY t.task ORDER BY c DESC""", (jg,)).fetchall()
+    else:
+        task_rows = conn.execute("SELECT task, COUNT(*) as c FROM turing_tasks GROUP BY task ORDER BY c DESC").fetchall()
     trust_tasks = {r["task"]: r["c"] for r in task_rows}
 
-    # Recent respondents
-    recent = conn.execute("SELECT * FROM turing_responses ORDER BY id DESC LIMIT 20").fetchall()
+    # Recent respondents (filtered)
+    if jg:
+        recent = conn.execute("SELECT * FROM turing_responses WHERE job_group=? ORDER BY id DESC LIMIT 20",
+                              (jg,)).fetchall()
+    else:
+        recent = conn.execute("SELECT * FROM turing_responses ORDER BY id DESC LIMIT 20").fetchall()
     respondents_list = [{"respondent_id": r["respondent_id"], "job_group": r["job_group"],
                          "seniority": r["seniority"], "timestamp": r["timestamp"]} for r in recent]
 
@@ -553,7 +591,8 @@ def api_turing_submit():
 
 @app.route("/api/turing/stats")
 def api_turing_stats():
-    return jsonify(get_turing_stats())
+    job_group = request.args.get("job_group") or None
+    return jsonify(get_turing_stats(job_group=job_group))
 
 
 @app.route("/api/turing/scenarios")

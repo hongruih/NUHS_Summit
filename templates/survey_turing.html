@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title }} — AI vs Human Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e1a;--c1:#111827;--c2:#1a2235;--bd:#1e293b;--t1:#f1f5f9;--t2:#94a3b8;--t3:#64748b;
+--bl:#3b82f6;--cy:#06b6d4;--gn:#22c55e;--rd:#ef4444;--am:#f59e0b;--pu:#a855f7;--pk:#ec4899;--r:12px;--rs:8px}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+.hdr{text-align:center;padding:20px 0 16px;border-bottom:1px solid var(--bd);margin-bottom:20px}
+.hdr h1{font-size:1.2rem;font-weight:700;background:linear-gradient(135deg,var(--pk),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr p{font-size:.8rem;color:var(--t2);margin-top:6px}
+.step{display:none}.step.on{display:block;animation:fi .3s}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card{border-radius:var(--r);border:1px solid var(--bd);background:var(--c1);padding:16px;margin-bottom:14px}
+.card h3{font-size:.72rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--pk);margin-bottom:10px}
+.card h4{font-size:.82rem;font-weight:500;margin-bottom:8px;color:var(--t2)}
+.patient-box{padding:12px;border-radius:var(--rs);background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(6,182,212,.06));border:1px solid rgba(59,130,246,.15);font-size:.88rem;line-height:1.6;margin-bottom:12px}
+.patient-box .icon{font-size:1.2rem;margin-right:6px}
+.resp-option{padding:12px;border-radius:var(--rs);border:2px solid var(--bd);background:var(--c2);cursor:pointer;margin-bottom:8px;font-size:.84rem;line-height:1.5;transition:.2s}
+.resp-option:hover{border-color:var(--bl)}
+.resp-option.sel{border-color:var(--pk);background:rgba(236,72,153,.08)}
+.resp-option .tag{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--t3);display:block;margin-bottom:4px}
+
+/* ratings */
+.rating-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rating-label{font-size:.78rem;width:90px;color:var(--t2)}
+.stars{display:flex;gap:4px}
+.star{width:30px;height:30px;border-radius:4px;background:var(--c2);border:1px solid var(--bd);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:.2s}
+.star:hover{background:rgba(236,72,153,.15);border-color:var(--pk)}
+.star.on{background:rgba(236,72,153,.2);border-color:var(--pk);color:var(--pk)}
+
+/* select options */
+.sel-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.sel-group label{font-size:.82rem;color:var(--t2);margin-bottom:2px}
+.sel-opt{padding:10px 12px;border-radius:var(--rs);border:1px solid var(--bd);background:var(--c2);cursor:pointer;font-size:.8rem;transition:.2s}
+.sel-opt:hover{border-color:var(--bl)}.sel-opt.sel{border-color:var(--pk);background:rgba(236,72,153,.08)}
+
+.check-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chk{padding:8px 12px;border-radius:20px;border:1px solid var(--bd);background:var(--c2);cursor:pointer;font-size:.75rem;transition:.2s}
+.chk:hover{border-color:var(--bl)}.chk.sel{border-color:var(--pu);background:rgba(168,85,247,.12);color:var(--pu)}
+
+.btn{font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;padding:12px 24px;border-radius:var(--rs);border:none;cursor:pointer;transition:.2s;width:100%}
+.bp{background:linear-gradient(135deg,var(--pk),var(--pu));color:#fff}.bp:hover{opacity:.9}.bp:disabled{opacity:.4;cursor:not-allowed}
+.bg{background:0;border:1px solid var(--bd);color:var(--t2);margin-top:8px}.bg:hover{background:var(--c2)}
+
+.progress{display:flex;gap:4px;justify-content:center;margin-bottom:16px}
+.pdot{width:8px;height:8px;border-radius:50%;background:var(--bd)}
+.pdot.on{background:var(--pk)}.pdot.done{background:var(--gn)}
+
+/* results */
+.result-card{border-radius:var(--r);border:1px solid var(--bd);background:var(--c1);padding:14px;margin-bottom:10px}
+.result-card.correct{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.05)}
+.result-card.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05)}
+.result-badge{font-family:'Space Mono',monospace;font-size:.65rem;padding:3px 8px;border-radius:10px;display:inline-block;margin-bottom:6px}
+.result-badge.correct{background:rgba(34,197,94,.15);color:var(--gn)}.result-badge.wrong{background:rgba(239,68,68,.15);color:var(--rd)}
+.result-exp{font-size:.78rem;color:var(--t2);line-height:1.5;margin-top:6px}
+
+.score-hero{text-align:center;padding:20px;margin-bottom:16px}
+.score-hero .big{font-size:3rem;font-weight:700;background:linear-gradient(135deg,var(--pk),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-hero .sub{font-size:.85rem;color:var(--t2);margin-top:4px}
+</style></head><body>
+<div class="wrap">
+<div class="hdr"><h1>🤖 AI vs Human — Can You Tell?</h1><p>Read each patient scenario, then guess which response was written by AI</p></div>
+
+<div class="progress" id="progress"></div>
+
+<!-- Step 0: Demographics -->
+<div class="step on" id="step_demo">
+  <div class="card">
+    <h3>About You</h3>
+    <div class="sel-group"><label>Your Role / Job Group</label><div id="jg_opts"></div></div>
+    <div class="sel-group"><label>Seniority Level</label><div id="sn_opts"></div></div>
+  </div>
+  <button class="btn bp" onclick="startScenarios()">Start Survey →</button>
+</div>
+
+<!-- Steps 1–5: Scenarios (generated by JS) -->
+<div id="scenario_steps"></div>
+
+<!-- Final: Tasks + Submit -->
+<div class="step" id="step_tasks">
+  <div class="card">
+    <h3>One Last Question</h3>
+    <h4>Which tasks would you be comfortable allowing AI to perform?</h4>
+    <p style="font-size:.72rem;color:var(--t3);margin-bottom:8px">Select all that apply</p>
+    <div class="check-group" id="task_checks"></div>
+  </div>
+  <button class="btn bp" onclick="submitAll()">Submit All →</button>
+</div>
+
+<!-- Results -->
+<div class="step" id="step_results">
+  <div class="score-hero" id="scoreHero"></div>
+  <div id="resultCards"></div>
+  <button class="btn bg" onclick="location.reload()">Take Again</button>
+</div>
+</div>
+
+<script>
+const SCENARIOS={{scenarios_json|safe}};
+const JOB_GROUPS={{job_groups|tojson}};
+const SENIORITY={{seniority_levels|tojson}};
+const TASKS={{trust_tasks|tojson}};
+
+let selJobGroup='',selSeniority='';
+let answers={}; // {scenario_id:{guessed_ai_index, ratings:{trust,empathy,safety,usefulness}}}
+let selTasks=new Set();
+let currentStep=0;
+const totalSteps=SCENARIOS.length+2; // demo + scenarios + tasks
+
+function $(id){return document.getElementById(id)}
+
+// Build progress dots
+function updateProgress(){
+  let h='';for(let i=0;i<totalSteps;i++){
+    let cls=i<currentStep?'done':i===currentStep?'on':'';
+    h+=`<div class="pdot ${cls}"></div>`;
+  }$('progress').innerHTML=h;
+}
+
+// Build demographics
+function buildDemo(){
+  let jh='';JOB_GROUPS.forEach(g=>{jh+=`<div class="sel-opt" onclick="pickJG(this,'${g}')">${g}</div>`});$('jg_opts').innerHTML=jh;
+  let sh='';SENIORITY.forEach(s=>{sh+=`<div class="sel-opt" onclick="pickSN(this,'${s}')">${s}</div>`});$('sn_opts').innerHTML=sh;
+}
+
+function pickJG(el,v){selJobGroup=v;document.querySelectorAll('#jg_opts .sel-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel')}
+function pickSN(el,v){selSeniority=v;document.querySelectorAll('#sn_opts .sel-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel')}
+
+// Build scenario steps
+function buildScenarios(){
+  let h='';SCENARIOS.forEach((sc,i)=>{
+    h+=`<div class="step" id="step_sc_${i}">
+      <div class="card"><h3>Scenario ${i+1} of ${SCENARIOS.length}</h3>
+        <div class="patient-box"><span class="icon">🗣️</span> <strong>Patient says:</strong><br>${sc.patient}</div>
+        <h4>Which response was written by AI?</h4>
+        <div class="resp-option" id="sc${i}_r0" onclick="pickResp(${i},0)"><span class="tag">Response A</span>${sc.responses[0]}</div>
+        <div class="resp-option" id="sc${i}_r1" onclick="pickResp(${i},1)"><span class="tag">Response B</span>${sc.responses[1]}</div>
+      </div>
+      <div class="card" id="sc${i}_ratings" style="display:none">
+        <h3>Rate the AI Response</h3>
+        <p style="font-size:.72rem;color:var(--t3);margin-bottom:10px">Rate the response you identified as AI (1 = very poor, 5 = excellent)</p>
+        <div class="rating-row"><span class="rating-label">Trust</span><div class="stars" id="sc${i}_trust">${makeStars(i,'trust')}</div></div>
+        <div class="rating-row"><span class="rating-label">Empathy</span><div class="stars" id="sc${i}_empathy">${makeStars(i,'empathy')}</div></div>
+        <div class="rating-row"><span class="rating-label">Safety</span><div class="stars" id="sc${i}_safety">${makeStars(i,'safety')}</div></div>
+        <div class="rating-row"><span class="rating-label">Usefulness</span><div class="stars" id="sc${i}_usefulness">${makeStars(i,'usefulness')}</div></div>
+      </div>
+      <button class="btn bp" onclick="nextScenario(${i})">Next →</button>
+    </div>`;
+  });
+  $('scenario_steps').innerHTML=h;
+}
+
+function makeStars(scIdx,dim){
+  let h='';for(let s=1;s<=5;s++){h+=`<div class="star" onclick="rate(${scIdx},'${dim}',${s},this)">${s}</div>`}return h;
+}
+
+function pickResp(scIdx,rIdx){
+  document.querySelectorAll(`#step_sc_${scIdx} .resp-option`).forEach(e=>e.classList.remove('sel'));
+  $(`sc${scIdx}_r${rIdx}`).classList.add('sel');
+  let sid=SCENARIOS[scIdx].id;
+  if(!answers[sid])answers[sid]={guessed_ai_index:rIdx,ratings:{trust:3,empathy:3,safety:3,usefulness:3}};
+  else answers[sid].guessed_ai_index=rIdx;
+  $(`sc${scIdx}_ratings`).style.display='block';
+}
+
+function rate(scIdx,dim,val,el){
+  let sid=SCENARIOS[scIdx].id;
+  if(!answers[sid])return;
+  answers[sid].ratings[dim]=val;
+  el.parentElement.querySelectorAll('.star').forEach((s,i)=>{s.classList.toggle('on',i<val)});
+}
+
+function goToStep(n){
+  currentStep=n;
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
+  if(n===0)$('step_demo').classList.add('on');
+  else if(n<=SCENARIOS.length)$(`step_sc_${n-1}`).classList.add('on');
+  else if(n===SCENARIOS.length+1)$('step_tasks').classList.add('on');
+  else $('step_results').classList.add('on');
+  updateProgress();window.scrollTo(0,0);
+}
+
+function startScenarios(){
+  if(!selJobGroup||!selSeniority){alert('Please select your role and seniority level');return}
+  goToStep(1);
+}
+
+function nextScenario(scIdx){
+  let sid=SCENARIOS[scIdx].id;
+  if(!answers[sid]){alert('Please select which response you think is AI');return}
+  goToStep(scIdx+2);
+}
+
+// Build task checkboxes
+function buildTasks(){
+  let h='';TASKS.forEach(t=>{h+=`<div class="chk" onclick="toggleTask(this,'${t}')">${t}</div>`});$('task_checks').innerHTML=h;
+}
+
+function toggleTask(el,t){el.classList.toggle('sel');if(selTasks.has(t))selTasks.delete(t);else selTasks.add(t)}
+
+async function submitAll(){
+  let payload={
+    job_group:selJobGroup,seniority:selSeniority,
+    answers:Object.entries(answers).map(([sid,a])=>({scenario_id:sid,guessed_ai_index:a.guessed_ai_index,ratings:a.ratings})),
+    tasks:[...selTasks]
+  };
+  try{
+    let res=await(await fetch('/api/turing/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})).json();
+    if(res.ok)showResults(res.results);
+    else alert('Error submitting');
+  }catch(e){alert('Network error');console.error(e)}
+}
+
+function showResults(results){
+  let correct=results.filter(r=>r.correct).length;
+  let total=results.length;
+  let pct=Math.round(correct/total*100);
+  let emoji=pct>=80?'🎉':pct>=60?'👍':pct>=40?'🤔':'😱';
+  $('scoreHero').innerHTML=`<div class="big">${emoji} ${correct}/${total}</div><div class="sub">You correctly identified ${correct} out of ${total} AI responses (${pct}%)</div>`;
+
+  let h='';results.forEach((r,i)=>{
+    let ok=r.correct;
+    h+=`<div class="result-card ${ok?'correct':'wrong'}">
+      <span class="result-badge ${ok?'correct':'wrong'}">${ok?'✓ Correct':'✗ Incorrect'}</span>
+      <strong style="font-size:.82rem"> Scenario ${i+1}</strong>
+      <div style="font-size:.72rem;color:var(--t3);margin-top:3px">AI was Response ${r.ai_index===0?'A':'B'}</div>
+      <div class="result-exp">${r.explanation}</div>
+    </div>`;
+  });
+  $('resultCards').innerHTML=h;
+  goToStep(totalSteps);
+}
+
+buildDemo();buildScenarios();buildTasks();updateProgress();
+</script></body></html>

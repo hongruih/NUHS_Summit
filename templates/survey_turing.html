@@ -60,19 +60,6 @@
 .score-hero{text-align:center;padding:20px;margin-bottom:16px}
 .score-hero .big{font-size:3rem;font-weight:700;background:linear-gradient(135deg,var(--pk),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .score-hero .sub{font-size:.85rem;color:var(--t2);margin-top:4px}
-
-/* completion modal */
-.cm-overlay{display:none;position:fixed;inset:0;background:rgba(10,14,26,.92);z-index:200;align-items:center;justify-content:center;padding:24px}
-.cm-overlay.on{display:flex;animation:cmFi .35s}
-@keyframes cmFi{from{opacity:0}to{opacity:1}}
-.cm-box{background:var(--c1);border:1px solid var(--bd);border-radius:20px;padding:36px 28px;text-align:center;max-width:380px;width:100%;animation:cmUp .4s cubic-bezier(.34,1.56,.64,1)}
-@keyframes cmUp{from{transform:scale(.82);opacity:0}to{transform:scale(1);opacity:1}}
-.cm-emoji{font-size:3.5rem;line-height:1;margin-bottom:10px}
-.cm-score{font-size:3.2rem;font-weight:700;background:linear-gradient(135deg,var(--pk),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;margin-bottom:8px}
-.cm-sub{font-size:.85rem;color:var(--t2);line-height:1.5;margin-bottom:20px}
-.cm-bar-track{height:10px;border-radius:6px;background:var(--c2);overflow:hidden;margin-bottom:6px}
-.cm-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--pk),var(--pu));width:0%;transition:width .9s cubic-bezier(.25,1,.5,1)}
-.cm-bar-label{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--t3);margin-bottom:24px}
 </style></head><body>
 <div class="wrap">
 <div class="hdr"><h1>🤖 AI vs Human — Can You Tell?</h1><p>Read each patient scenario, then guess which response was written by AI</p></div>
@@ -112,18 +99,6 @@
     <a href="/" class="btn bg" style="flex:1;text-align:center;text-decoration:none">&#8592; Back to Home</a>
   </div>
 </div>
-</div>
-
-<!-- Completion modal -->
-<div class="cm-overlay" id="cmOverlay">
-  <div class="cm-box">
-    <div class="cm-emoji" id="cmEmoji"></div>
-    <div class="cm-score" id="cmScore"></div>
-    <div class="cm-sub" id="cmSub"></div>
-    <div class="cm-bar-track"><div class="cm-bar-fill" id="cmBar"></div></div>
-    <div class="cm-bar-label" id="cmBarLabel"></div>
-    <button class="btn bp" onclick="dismissModal()">See Full Results &rarr;</button>
-  </div>
 </div>
 
 <script>
@@ -247,9 +222,8 @@ function showResults(results){
   let total=results.length;
   let pct=Math.round(correct/total*100);
   let emoji=pct>=80?'🎉':pct>=60?'👍':pct>=40?'🤔':'😱';
-
-  // Pre-populate results page (hidden until modal dismissed)
   $('scoreHero').innerHTML=`<div class="big">${emoji} ${correct}/${total}</div><div class="sub">You correctly identified ${correct} out of ${total} AI responses (${pct}%)</div>`;
+
   let h='';results.forEach((r,i)=>{
     let ok=r.correct;
     h+=`<div class="result-card ${ok?'correct':'wrong'}">
@@ -260,18 +234,6 @@ function showResults(results){
     </div>`;
   });
   $('resultCards').innerHTML=h;
-
-  // Show completion modal
-  $('cmEmoji').textContent=emoji;
-  $('cmScore').textContent=`${correct} / ${total}`;
-  $('cmSub').textContent=`You correctly identified ${correct} out of ${total} AI responses`;
-  $('cmBarLabel').textContent=`${pct}% accuracy`;
-  $('cmOverlay').classList.add('on');
-  setTimeout(()=>{$('cmBar').style.width=pct+'%'},80);
-}
-
-function dismissModal(){
-  $('cmOverlay').classList.remove('on');
   goToStep(totalSteps);
 }
 

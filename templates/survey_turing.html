@@ -60,6 +60,18 @@
 .score-hero{text-align:center;padding:20px;margin-bottom:16px}
 .score-hero .big{font-size:3rem;font-weight:700;background:linear-gradient(135deg,var(--pk),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .score-hero .sub{font-size:.85rem;color:var(--t2);margin-top:4px}
+
+/* ── Completion modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,14,26,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:100;align-items:center;justify-content:center;padding:24px;animation:mfi .4s ease}
+.modal-overlay.show{display:flex}
+@keyframes mfi{from{opacity:0}to{opacity:1}}
+.modal-card{background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(236,72,153,.35);border-radius:24px;padding:40px 32px;text-align:center;max-width:340px;width:100%;animation:mpi .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes mpi{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.modal-icon{font-size:4rem;margin-bottom:16px}
+.modal-card h2{font-size:2rem;font-weight:800;background:linear-gradient(90deg,var(--pk),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+.modal-card .gift-text{font-size:1.05rem;font-weight:600;color:var(--t1);line-height:1.5;margin-bottom:8px}
+.modal-card .stock-note{font-size:.8rem;color:var(--t3);margin-bottom:28px}
+.modal-back{display:inline-block;padding:12px 28px;background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.3);border-radius:10px;color:var(--pk);text-decoration:none;font-weight:600;font-size:.9rem}
 </style></head><body>
 <div class="wrap">
 <div class="hdr"><h1>🤖 AI vs Human — Can You Tell?</h1><p>Read each patient scenario, then guess which response was written by AI</p></div>
@@ -96,6 +108,17 @@
   <div id="resultCards"></div>
   <button class="btn bg" onclick="location.reload()">Take Again</button>
 </div>
+</div>
+
+<!-- Completion modal -->
+<div class="modal-overlay" id="completion-modal">
+  <div class="modal-card">
+    <div class="modal-icon">🎁</div>
+    <h2>Thank you!</h2>
+    <p class="gift-text">Please approach our booth<br>for a <strong>free gift!</strong></p>
+    <p class="stock-note">(While stocks last)</p>
+    <a class="modal-back" href="/">← Back to Surveys</a>
+  </div>
 </div>
 
 <script>
@@ -232,6 +255,7 @@ function showResults(results){
   });
   $('resultCards').innerHTML=h;
   goToStep(totalSteps);
+  setTimeout(()=>{ $('completion-modal').classList.add('show'); }, 2000);
 }
 
 buildDemo();buildScenarios();buildTasks();updateProgress();

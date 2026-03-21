@@ -37,6 +37,8 @@
 """
 
 import os, io, re, base64, json, sqlite3, uuid
+import openpyxl
+from openpyxl.styles import Font
 from dotenv import load_dotenv
 load_dotenv()
 from collections import Counter
@@ -284,6 +286,12 @@ def init_db():
         ai_tools TEXT,
         likert_answers TEXT
     )""")
+    # Migration: add participant_id to sentiment_responses (safe no-op if already exists)
+    try:
+        c.execute("ALTER TABLE sentiment_responses ADD COLUMN participant_id TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()
 
@@ -470,12 +478,13 @@ def api_submit():
     d = request.json
     t = (d.get("text") or "").strip()
     q = d.get("question_index", 0)
+    pid = (d.get("participant_id") or "").strip() or None
     if not t:
         return jsonify({"error": "Empty"}), 400
     s = sentiment(t)
     conn = get_db()
-    conn.execute("INSERT INTO sentiment_responses (question_index,text,polarity,subjectivity,label,emoji,color,timestamp) VALUES (?,?,?,?,?,?,?,?)",
-                 (q, t, s["polarity"], s["subjectivity"], s["label"], s["emoji"], s["color"], datetime.now().isoformat()))
+    conn.execute("INSERT INTO sentiment_responses (question_index,text,polarity,subjectivity,label,emoji,color,timestamp,participant_id) VALUES (?,?,?,?,?,?,?,?,?)",
+                 (q, t, s["polarity"], s["subjectivity"], s["label"], s["emoji"], s["color"], datetime.now().isoformat(), pid))
     conn.commit()
     conn.close()
     entry = {"text": t, "sentiment": s, "timestamp": datetime.now().isoformat()}
@@ -532,6 +541,116 @@ def api_export():
     data["turing_test"] = get_turing_stats()
     data["acceptance_survey"] = api_acceptance_stats().get_json()
     return jsonify(data)
+
+
+@app.route("/api/export/excel")
+def api_export_excel():
+    wb = openpyxl.Workbook()
+    bold = Font(bold=True)
+    conn = get_db()
+
+    # ── Sheet 1: Sentiment Responses — wide format, one row per participant ──
+    ws1 = wb.active
+    ws1.title = "Sentiment Responses"
+
+    # Build wide headers: Participant ID + per-question columns
+    sent_headers = ["Participant ID"]
+    for i, q in enumerate(QUESTIONS):
+        sent_headers += [f"Q{i+1} Transcript", f"Q{i+1} Sentiment", f"Q{i+1} Polarity"]
+    sent_headers.append("Timestamp")
+    ws1.append(sent_headers)
+    for cell in ws1[1]: cell.font = bold
+
+    # Group rows by participant_id; legacy rows (no ID) each get a unique placeholder
+    sent_rows = conn.execute("SELECT * FROM sentiment_responses ORDER BY id").fetchall()
+    groups = {}   # pid → {q_index: row}
+    anon_n = 0
+    for r in sent_rows:
+        pid = r["participant_id"]
+        if not pid:
+            anon_n += 1
+            pid = f"LEGACY-{anon_n:04d}"
+        if pid not in groups:
+            groups[pid] = {"_ts": r["timestamp"]}
+        groups[pid][r["question_index"]] = r
+        groups[pid]["_ts"] = r["timestamp"]   # track latest timestamp
+
+    for pid, qs in groups.items():
+        row = [pid]
+        for i in range(len(QUESTIONS)):
+            if i in qs:
+                r = qs[i]
+                row += [r["text"], r["label"], r["polarity"]]
+            else:
+                row += ["", "", ""]
+        row.append(qs.get("_ts", ""))
+        ws1.append(row)
+
+    # ── Sheet 2: Turing Test — wide format, one row per respondent ───────────
+    ws2 = wb.create_sheet("Turing Test")
+
+    sc_ids = [sc["id"] for sc in SCENARIOS]
+    sc_labels = {"s1": "S1 Weight Loss", "s2": "S2 Chest Tightness",
+                 "s3": "S3 Child Fever", "s4": "S4 Depression", "s5": "S5 Medication Error"}
+    tt_headers = ["Participant ID", "Job Group", "Seniority", "Timestamp", "Trusted Tasks"]
+    for sid in sc_ids:
+        lbl = sc_labels.get(sid, sid.upper())
+        tt_headers += [f"{lbl} — Correct", f"{lbl} — Trust",
+                       f"{lbl} — Empathy", f"{lbl} — Safety", f"{lbl} — Usefulness"]
+    ws2.append(tt_headers)
+    for cell in ws2[1]: cell.font = bold
+
+    tasks_map = {r["respondent_id"]: r["tasks"] for r in conn.execute(
+        "SELECT respondent_id, GROUP_CONCAT(task, '; ') as tasks FROM turing_tasks GROUP BY respondent_id"
+    ).fetchall()}
+
+    ans_by_resp = {}
+    for a in conn.execute("SELECT * FROM turing_answers ORDER BY id").fetchall():
+        ans_by_resp.setdefault(a["respondent_id"], {})[a["scenario_id"]] = a
+
+    for r in conn.execute("SELECT * FROM turing_responses ORDER BY id").fetchall():
+        rid = r["respondent_id"]
+        row = [rid, r["job_group"], r["seniority"], r["timestamp"], tasks_map.get(rid, "")]
+        for sid in sc_ids:
+            a = ans_by_resp.get(rid, {}).get(sid)
+            if a:
+                row += ["Yes" if a["correct"] else "No",
+                        a["rating_trust"], a["rating_empathy"], a["rating_safety"], a["rating_usefulness"]]
+            else:
+                row += ["", "", "", "", ""]
+        ws2.append(row)
+
+    # ── Sheet 3: AI Acceptance Survey — full question text as column headers ─
+    ws3 = wb.create_sheet("AI Acceptance Survey")
+
+    # Build (key, full_text) pairs in order
+    likert_items = [(k, q_text)
+                    for part_val in ACCEPTANCE_LIKERT.values()
+                    for k, q_text in part_val["questions"].items()]
+    ac_headers = ["Participant ID", "Timestamp", "Age Group", "Gender", "Disciplines",
+                  "Years in Healthcare", "Years in Current Role", "Seniority",
+                  "AI Usage Frequency", "AI Tools Used"]
+    ac_headers += [text for _, text in likert_items]
+    ws3.append(ac_headers)
+    for cell in ws3[1]: cell.font = bold
+
+    for r in conn.execute("SELECT * FROM acceptance_responses ORDER BY id").fetchall():
+        likert = json.loads(r["likert_answers"] or "{}")
+        row = [r["participant_id"], r["timestamp"], r["age_group"], r["gender"],
+               ", ".join(json.loads(r["disciplines"] or "[]")),
+               r["years_healthcare"], r["years_role"], r["seniority"], r["ai_frequency"],
+               ", ".join(json.loads(r["ai_tools"] or "[]"))]
+        row += [likert.get(k, "") for k, _ in likert_items]
+        ws3.append(row)
+
+    conn.close()
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    filename = f"nuhs_summit_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+    return send_file(buf, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                     as_attachment=True, download_name=filename)
 
 
 # ═══════════════════════════════════════════════════════

@@ -202,6 +202,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .ac-q-bar-fill{height:100%;border-radius:4px;transition:width .5s}
 .ac-q-score{font-size:.7rem;font-weight:700;font-family:'Space Mono',monospace;width:28px;text-align:right;flex-shrink:0}
 
+/* ═══ RESPONDENT BAR ═══ */
+.resp-bar{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--bd);margin-top:4px}
+.resp-lbl{font-size:.62rem;color:var(--t3);font-family:'Space Mono',monospace}
+.resp-id{font-size:.68rem;font-family:'Space Mono',monospace;color:var(--cy);flex:1}
+
 /* ═══ TURING FILTER ═══ */
 .tt-filter{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:10px 14px;border-radius:var(--rs);background:var(--c1);border:1px solid var(--bd)}
 .tt-filter-label{font-size:.62rem;font-family:'Space Mono',monospace;color:var(--t3);white-space:nowrap;margin-right:2px}
@@ -278,6 +283,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
     <span class="ml" id="ml_{{i}}">Tap to start live transcription</span>
   </div>
   <textarea class="tx" id="tx_{{i}}" placeholder="Speech appears here in real time, or type manually..." rows="3"></textarea>
+  <div class="resp-bar"><span class="resp-lbl">Respondent:</span><span class="resp-id" id="respId_{{i}}"></span><button class="btn bg" onclick="newRespondent()" style="font-size:.65rem;padding:4px 10px">New</button></div>
   <div class="br"><button class="btn bp" id="sub_{{i}}" onclick="sub({{i}})">Submit</button><button class="btn bg" onclick="clr({{i}})">Clear</button></div>
   <div class="lr" id="lr_{{i}}"><div class="lr-top"><span class="lr-em" id="lrem_{{i}}"></span><div><div class="lr-lb" id="lrlb_{{i}}"></div><div class="lr-pl" id="lrpl_{{i}}"></div></div></div><div class="lr-bar"><div class="lr-fill" id="lrf_{{i}}"></div></div></div>
 </div>
@@ -371,7 +377,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 </div>
 </div></div>
 
-<div class="adm"><span class="tc" id="totC">Total: 0 responses · 0 survey</span><div style="display:flex;gap:6px"><button class="btn bg" onclick="exp()" style="font-size:.7rem;padding:5px 10px">Export JSON</button><button class="btn bg" onclick="rst()" style="font-size:.7rem;padding:5px 10px;color:var(--rd)">Reset All</button></div></div>
+<div class="adm"><span class="tc" id="totC">Total: 0 responses · 0 survey</span><div style="display:flex;gap:6px"><button class="btn bg" onclick="exp()" style="font-size:.7rem;padding:5px 10px">Export JSON</button><button class="btn bg" onclick="expXL()" style="font-size:.7rem;padding:5px 10px;color:var(--gn)">Export Excel</button><button class="btn bg" onclick="rst()" style="font-size:.7rem;padding:5px 10px;color:var(--rd)">Reset All</button></div></div>
 
 <!-- ══════ MODAL ══════ -->
 <div id="modal" onclick="if(event.target===this)closeModal()">
@@ -504,6 +510,18 @@ function $(id){return document.getElementById(id)}
 function setS(t,c){let p=$('stPill');p.textContent='● '+t;p.style.borderColor=c;p.style.color=c}
 
 // ════════════════════════════════════════════════════════
+// RESPONDENT ID
+// ════════════════════════════════════════════════════════
+let currentParticipantId='';
+function genParticipantId(){
+  return Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function newRespondent(){
+  currentParticipantId=genParticipantId();
+  for(let i=0;i<QN;i++){const el=$(`respId_${i}`);if(el)el.textContent=currentParticipantId;}
+}
+
+// ════════════════════════════════════════════════════════
 // MODAL
 // ════════════════════════════════════════════════════════
 let lastWCData=[null,null,null];
@@ -536,7 +554,7 @@ function go(id){
 async function sub(q){
   let bx=$(`tx_${q}`),t=bx.value.trim();if(!t)return;
   if(speechActive[q])stopSpeech(q);$(`sub_${q}`).disabled=true;
-  try{let x=await(await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t,question_index:q})})).json();
+  try{let x=await(await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t,question_index:q,participant_id:currentParticipantId})})).json();
     if(x.entry){showLR(q,x.entry.sentiment);loadQ(q);bx.value='';finalTranscripts[q]='';updTot();updateLivePreview(q)}}catch(e){console.error(e)}
   $(`sub_${q}`).disabled=false;
 }
@@ -731,6 +749,8 @@ async function rst(){if(!confirm('Reset ALL data (sentiment + survey)?'))return;
 
 async function exp(){let d=await(await fetch('/api/export')).json();let b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});let u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`sentiment_export_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u)}
 
+function expXL(){window.location.href='/api/export/excel'}
+
 setInterval(()=>{
   if(currentPanel==='ov')loadOv();
   else if(currentPanel==='dash')loadDash();
@@ -742,5 +762,6 @@ setInterval(()=>{
 
 if(!HAS_SPEECH){for(let i=0;i<QN;i++)$(`noSp_${i}`).classList.add('vis')}
 for(let q=0;q<QN;q++){$(`tx_${q}`).addEventListener('input',()=>updateLivePreview(q))}
+newRespondent();
 updTot();loadOv();
 </script></body></html>

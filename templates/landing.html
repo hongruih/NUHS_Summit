@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NUH AI Summit — Surveys</title>
+  <title>NUH AI Summit 2026 — AI Surveys</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #060b18;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -16,73 +18,212 @@
       justify-content: center;
       padding: 32px 16px;
       color: #fff;
+      position: relative;
+      overflow: hidden;
     }
+
+    /* Ambient background orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      opacity: 0;
+      animation: orbIn 1.2s ease forwards;
+    }
+    .orb-1 {
+      width: 520px; height: 520px;
+      background: radial-gradient(circle, rgba(99,102,241,.35), transparent 65%);
+      top: -160px; left: -140px;
+      animation-delay: .1s;
+      animation: orbIn .8s .1s ease forwards, drift1 14s 1s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, rgba(236,72,153,.28), transparent 65%);
+      bottom: -120px; right: -100px;
+      animation: orbIn .8s .3s ease forwards, drift2 16s 1.3s ease-in-out infinite alternate;
+    }
+    .orb-3 {
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(6,182,212,.2), transparent 65%);
+      top: 50%; left: 60%;
+      animation: orbIn .8s .5s ease forwards, drift3 18s 1.6s ease-in-out infinite alternate;
+    }
+    @keyframes orbIn  { to { opacity: 1; } }
+    @keyframes drift1 { to { transform: translate(30px, 40px) scale(1.08); } }
+    @keyframes drift2 { to { transform: translate(-30px, -25px) scale(1.06); } }
+    @keyframes drift3 { to { transform: translate(-40px, 20px) scale(1.12); } }
+
+    /* Content wrapper */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Logo placeholder ─────────────────────────────────── */
+    /* Replace the <svg> below with your actual NUHS logo     */
+    .logo-placeholder {
+      margin-bottom: 20px;
+      animation: logoIn .6s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .logo-placeholder svg {
+      width: 60px; height: 60px;
+      filter: drop-shadow(0 0 24px rgba(129,140,248,.55));
+    }
+    @keyframes logoIn { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* ── Event badge ─────────────────────────────────────── */
+    .event-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: #a5b4fc;
+      background: rgba(99,102,241,.1);
+      border: 1px solid rgba(99,102,241,.25);
+      border-radius: 20px;
+      padding: 5px 14px;
+      margin-bottom: 20px;
+      animation: fadeUp .5s .2s ease both;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #818cf8;
+      animation: blink 2.2s infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+
+    /* ── Header ─────────────────────────────────────────── */
     .header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 36px;
+      animation: fadeUp .5s .35s ease both;
     }
     .header h1 {
-      font-size: 2rem;
+      font-size: 2.3rem;
       font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(90deg, #818cf8, #c084fc, #f472b6);
+      letter-spacing: -.5px;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 40%, #f9a8d4 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
     .header p {
-      color: #94a3b8;
-      font-size: 1rem;
+      color: #64748b;
+      font-size: .95rem;
+      line-height: 1.55;
     }
+
+    /* ── Survey cards ────────────────────────────────────── */
     .cards {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
       width: 100%;
-      max-width: 420px;
+      animation: fadeUp .5s .5s ease both;
     }
     .card {
       border-radius: 16px;
-      padding: 24px 20px;
+      padding: 20px 18px;
       text-decoration: none;
       color: #fff;
       display: flex;
       align-items: center;
-      gap: 16px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      gap: 14px;
+      transition: transform .18s ease, box-shadow .18s ease;
       position: relative;
+      overflow: hidden;
     }
-    .card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    /* Inner gloss overlay */
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.1) 0%, transparent 55%);
+      border-radius: 16px;
+      pointer-events: none;
+    }
+    .card:hover { transform: translateY(-3px); }
     .card:active { transform: translateY(0); }
-    .card-1 { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
-    .card-2 { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
-    .card-3 { background: linear-gradient(135deg, #ec4899, #8b5cf6); }
-    .card-icon {
-      font-size: 2.2rem;
-      flex-shrink: 0;
+    .card-1 {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      box-shadow: 0 8px 32px rgba(99,102,241,.4);
     }
+    .card-1:hover { box-shadow: 0 14px 40px rgba(99,102,241,.55); }
+    .card-2 {
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      box-shadow: 0 8px 32px rgba(2,132,199,.35);
+    }
+    .card-2:hover { box-shadow: 0 14px 40px rgba(2,132,199,.5); }
+    .card-3 {
+      background: linear-gradient(135deg, #db2777, #9333ea);
+      box-shadow: 0 8px 32px rgba(219,39,119,.35);
+    }
+    .card-3:hover { box-shadow: 0 14px 40px rgba(219,39,119,.5); }
+    .card-icon { font-size: 2rem; flex-shrink: 0; }
     .card-body { flex: 1; }
-    .card-body h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
-    .card-body p { font-size: 0.85rem; opacity: 0.85; line-height: 1.45; }
-    .card-arrow {
-      font-size: 1.6rem;
-      opacity: 0.7;
-      flex-shrink: 0;
-    }
+    .card-body h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 3px; }
+    .card-body p  { font-size: .82rem; opacity: .82; line-height: 1.4; }
+    .card-arrow   { font-size: 1.5rem; opacity: .6; flex-shrink: 0; }
+
+    /* ── Footer credit ───────────────────────────────────── */
     .footer {
-      margin-top: 40px;
+      margin-top: 36px;
       text-align: center;
+      animation: fadeUp .5s .65s ease both;
+    }
+    .footer-line {
+      color: #334155;
+      font-size: .74rem;
+      line-height: 1.9;
+    }
+    .footer-line a {
       color: #475569;
-      font-size: 0.78rem;
+      text-decoration: none;
+      transition: color .15s;
+    }
+    .footer-line a:hover { color: #a5b4fc; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>NUH AI Summit</h1>
-    <p>Select a survey to begin</p>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="wrap">
+
+  <div class="logo-placeholder">
+    <img src="/static/HCRD.png" alt="HCRD" style="height:60px;width:auto">
   </div>
+
+  <div class="event-badge">
+    <span class="badge-dot"></span>
+    NUH AI Summit &middot; 2026
+  </div>
+
+  <div class="header">
+    <h1>AI in Healthcare</h1>
+    <p>Three short surveys on AI perspectives,<br>detection, and acceptance in clinical practice.</p>
+  </div>
+
   <div class="cards">
     <a class="card card-1" href="/survey/sentiment">
       <div class="card-icon">💬</div>
@@ -104,11 +245,17 @@
       <div class="card-icon">📋</div>
       <div class="card-body">
         <h2>AI Acceptance Survey</h2>
-        <p>Help us understand how healthcare professionals feel about AI adoption.</p>
+        <p>How do healthcare professionals feel about AI adoption?</p>
       </div>
       <span class="card-arrow">›</span>
     </a>
   </div>
-  <div class="footer">NUH AI Summit &middot; Interactive Audience Engagement</div>
+
+  <div class="footer">
+    <div class="footer-line">NUH AI Summit &middot; 2026 &nbsp;&middot;&nbsp; Interactive Audience Engagement</div>
+    <div class="footer-line"><a href="/admin">Staff dashboard</a></div>
+  </div>
+
+</div>
 </body>
 </html>

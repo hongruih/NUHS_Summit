@@ -6,43 +6,430 @@
   <title>AI Acceptance Survey</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 24px 16px;
       color: #fff;
     }
-    .container {
-      text-align: center;
-      max-width: 380px;
+
+    .survey-wrap {
       width: 100%;
+      max-width: 480px;
     }
-    .icon { font-size: 3rem; margin-bottom: 16px; }
-    h1 { font-size: 1.5rem; font-weight: 700; color: #e879f9; margin-bottom: 12px; }
-    p { color: #94a3b8; line-height: 1.6; margin-bottom: 28px; }
-    .back {
+
+    /* ── Header ── */
+    .survey-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .survey-header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #e879f9, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+    .survey-header p {
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    /* ── Progress dots ── */
+    .progress {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #334155;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .dot.active { background: #e879f9; transform: scale(1.3); }
+    .dot.done   { background: #a855f7; }
+
+    /* ── Card ── */
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 28px 24px;
+    }
+
+    .step-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #a855f7;
+      margin-bottom: 10px;
+    }
+
+    .question-text {
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #e2e8f0;
+      margin-bottom: 20px;
+    }
+
+    /* ── Option buttons ── */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .opt-btn {
+      width: 100%;
+      padding: 13px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: #cbd5e1;
+      font-family: inherit;
+      font-size: 0.95rem;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .opt-btn:hover {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.35);
+      color: #e2e8f0;
+    }
+    .opt-btn.selected {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: #a855f7;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .multi-hint {
+      font-size: 0.75rem;
+      color: #475569;
+      margin-bottom: 12px;
+    }
+
+    /* ── Navigation ── */
+    .nav-row {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-back-step {
+      flex: 0 0 auto;
+      padding: 13px 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: #64748b;
+      font-family: inherit;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .btn-back-step:hover { background: rgba(255,255,255,0.08); color: #94a3b8; }
+    .btn-back-step:disabled { opacity: 0.2; cursor: not-allowed; }
+
+    .btn-next {
+      flex: 1;
+      padding: 13px;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-next:hover { opacity: 0.9; }
+    .btn-next:active { transform: scale(0.98); }
+    .btn-next:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .error-msg {
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+      min-height: 1.2em;
+    }
+
+    /* ── Done screen ── */
+    #done-screen {
+      display: none;
+      text-align: center;
+    }
+    .done-icon { font-size: 3.5rem; margin-bottom: 20px; }
+    #done-screen h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #e879f9;
+      margin-bottom: 10px;
+    }
+    #done-screen p {
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .btn-back-home {
       display: inline-block;
       padding: 12px 28px;
-      background: #a855f7;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.35);
       border-radius: 10px;
-      color: #fff;
+      color: #d8b4fe;
       text-decoration: none;
       font-weight: 600;
       font-size: 0.95rem;
     }
-    .back:hover { background: #9333ea; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="icon">📋</div>
+
+<div class="survey-wrap">
+
+  <div class="survey-header">
     <h1>AI Acceptance Survey</h1>
-    <p>This survey is being set up. Please check back shortly, or approach the booth for assistance.</p>
-    <a class="back" href="/">← Back to Surveys</a>
+    <p>NUH AI Summit &middot; Your responses are anonymous</p>
   </div>
+
+  <div class="progress" id="progress"></div>
+
+  <!-- ── Question screen ── -->
+  <div id="question-screen">
+    <div class="card">
+      <div class="step-label">Question <span id="step-num">1</span> of <span id="step-total"></span></div>
+      <div class="question-text" id="question-text"></div>
+      <div class="multi-hint" id="multi-hint"></div>
+      <div class="options" id="options"></div>
+      <div class="error-msg" id="error-msg"></div>
+      <div class="nav-row">
+        <button class="btn-back-step" id="back-btn" onclick="goBack()" disabled>&#8592;</button>
+        <button class="btn-next" id="next-btn" onclick="goNext()">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Done screen ── -->
+  <div id="done-screen">
+    <div class="done-icon">&#10003;</div>
+    <h2>Thank you!</h2>
+    <p>Your responses have been recorded.<br>We appreciate your participation.</p>
+    <a class="btn-back-home" href="/">&#8592; Back to Surveys</a>
+  </div>
+
+</div><!-- /survey-wrap -->
+
+<script>
+  // Questions injected from server
+  const STEPS = [
+    {
+      key: "age_group",
+      label: "How old are you?",
+      multi: false,
+      options: {{ part_a.age_group | tojson }}
+    },
+    {
+      key: "gender",
+      label: "What is your gender?",
+      multi: false,
+      options: {{ part_a.gender | tojson }}
+    },
+    {
+      key: "disciplines",
+      label: "Which discipline(s) best describe your role?",
+      multi: true,
+      options: {{ part_a.disciplines | tojson }}
+    },
+    {
+      key: "years_healthcare",
+      label: "How many years have you worked in healthcare?",
+      multi: false,
+      options: {{ part_a.years_healthcare | tojson }}
+    },
+    {
+      key: "years_role",
+      label: "How many years have you been in your current role?",
+      multi: false,
+      options: {{ part_a.years_role | tojson }}
+    },
+    {
+      key: "seniority",
+      label: "Which best describes your seniority level?",
+      multi: false,
+      options: {{ part_a.seniority | tojson }}
+    },
+    {
+      key: "ai_frequency",
+      label: "How often do you use AI tools in your work?",
+      multi: false,
+      options: {{ part_a.ai_frequency | tojson }}
+    },
+    {
+      key: "ai_tools",
+      label: "Which AI tools have you used? (Select all that apply)",
+      multi: true,
+      options: {{ part_a.ai_tools | tojson }}
+    }
+  ];
+
+  const TOTAL = STEPS.length;
+  let step = 0;
+  // answers[key] = string (single) or array (multi)
+  const answers = {};
+
+  // ── Progress dots ──────────────────────────────────────
+  function buildDots() {
+    const c = document.getElementById('progress');
+    c.innerHTML = '';
+    for (let i = 0; i < TOTAL; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      d.id = 'dot-' + i;
+      c.appendChild(d);
+    }
+  }
+
+  function updateDots(current) {
+    for (let i = 0; i < TOTAL; i++) {
+      const d = document.getElementById('dot-' + i);
+      d.className = 'dot' + (i < current ? ' done' : i === current ? ' active' : '');
+    }
+  }
+
+  // ── Render step ────────────────────────────────────────
+  function renderStep(i) {
+    const s = STEPS[i];
+    document.getElementById('step-num').textContent = i + 1;
+    document.getElementById('step-total').textContent = TOTAL;
+    document.getElementById('question-text').textContent = s.label;
+    document.getElementById('error-msg').textContent = '';
+    document.getElementById('multi-hint').textContent = s.multi ? 'Select all that apply.' : '';
+    document.getElementById('back-btn').disabled = (i === 0);
+    document.getElementById('next-btn').textContent = (i === TOTAL - 1) ? 'Submit' : 'Next';
+    updateDots(i);
+
+    const saved = answers[s.key];
+    const container = document.getElementById('options');
+    container.innerHTML = '';
+
+    s.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = opt;
+
+      const isSelected = s.multi
+        ? (Array.isArray(saved) && saved.includes(opt))
+        : (saved === opt);
+      if (isSelected) btn.classList.add('selected');
+
+      btn.onclick = () => selectOption(s.key, opt, s.multi, btn);
+      container.appendChild(btn);
+    });
+  }
+
+  function selectOption(key, value, multi, btn) {
+    if (multi) {
+      const current = Array.isArray(answers[key]) ? answers[key] : [];
+      const idx = current.indexOf(value);
+      if (idx === -1) {
+        answers[key] = [...current, value];
+        btn.classList.add('selected');
+      } else {
+        answers[key] = current.filter(v => v !== value);
+        btn.classList.remove('selected');
+      }
+    } else {
+      answers[key] = value;
+      // Deselect all, select this one
+      document.querySelectorAll('#options .opt-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+  }
+
+  // ── Navigation ─────────────────────────────────────────
+  function goBack() {
+    if (step > 0) {
+      step--;
+      renderStep(step);
+    }
+  }
+
+  function goNext() {
+    const s = STEPS[step];
+    const val = answers[s.key];
+    const hasAnswer = s.multi ? (Array.isArray(val) && val.length > 0) : !!val;
+
+    if (!hasAnswer) {
+      document.getElementById('error-msg').textContent = 'Please make a selection before continuing.';
+      return;
+    }
+    document.getElementById('error-msg').textContent = '';
+
+    if (step < TOTAL - 1) {
+      step++;
+      renderStep(step);
+    } else {
+      submitSurvey();
+    }
+  }
+
+  // ── Submit ─────────────────────────────────────────────
+  async function submitSurvey() {
+    const btn = document.getElementById('next-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    const payload = {
+      part_a: {
+        age_group:        answers.age_group        || null,
+        gender:           answers.gender           || null,
+        disciplines:      answers.disciplines      || [],
+        years_healthcare: answers.years_healthcare || null,
+        years_role:       answers.years_role       || null,
+        seniority:        answers.seniority        || null,
+        ai_frequency:     answers.ai_frequency     || null,
+        ai_tools:         answers.ai_tools         || []
+      },
+      likert_answers: {}
+    };
+
+    try {
+      const resp = await fetch('/api/acceptance/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!resp.ok) throw new Error('Server error');
+      document.getElementById('question-screen').style.display = 'none';
+      document.getElementById('done-screen').style.display = 'block';
+      updateDots(TOTAL);
+    } catch (e) {
+      document.getElementById('error-msg').textContent = 'Something went wrong. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Submit';
+    }
+  }
+
+  // ── Init ───────────────────────────────────────────────
+  buildDots();
+  renderStep(0);
+</script>
+
 </body>
 </html>

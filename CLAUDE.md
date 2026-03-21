@@ -97,6 +97,6 @@ A major refactor is in progress. Steps are being implemented sequentially; each 
 | 10 | Admin: expandable/modal views for all metric cards | ✅ Done |
 | 11 | Admin: Turing Test filter by job group | ✅ Done |
 | 12 | Excel export (`GET /api/export/excel`, 3-sheet `.xlsx`) | ✅ Done |
-| 13 | Turing Test: add completion modal | — |
+| 13 | Turing Test: add completion modal | ✅ Done |
 | 14 | Vibrant design refresh, logo placeholder, credit line | — |
 | 15 | Mobile responsiveness audit across all templates | — |

@@ -99,4 +99,4 @@ A major refactor is in progress. Steps are being implemented sequentially; each 
 | 12 | Excel export (`GET /api/export/excel`, 3-sheet `.xlsx`) | ✅ Done |
 | 13 | Turing Test: add completion modal | — |
 | 14 | Vibrant design refresh, logo placeholder, credit line | ✅ Done |
-| 15 | Mobile responsiveness audit across all templates | — |
+| 15 | Mobile responsiveness audit across all templates | ✅ Done |

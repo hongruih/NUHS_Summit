@@ -94,8 +94,8 @@ A major refactor is in progress. Steps are being implemented sequentially; each 
 | 7 | AI Acceptance Survey Part A (biographical, multi/single-select) | ✅ Done |
 | 8 | AI Acceptance Survey Parts B–F (Likert scale, 41 questions) | ✅ Done |
 | 9 | Admin dashboard: integrate AI Acceptance Survey metrics | ✅ Done |
-| 10 | Admin: expandable/modal views for all metric cards | Next |
-| 11 | Admin: Turing Test filter by job group | — |
+| 10 | Admin: expandable/modal views for all metric cards | ✅ Done |
+| 11 | Admin: Turing Test filter by job group | Next |
 | 12 | Excel export (`GET /api/export/excel`, 3-sheet `.xlsx`) | — |
 | 13 | Turing Test: add completion modal | — |
 | 14 | Vibrant design refresh, logo placeholder, credit line | — |

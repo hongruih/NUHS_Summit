@@ -201,6 +201,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .ac-q-bar-track{flex:1;height:7px;border-radius:4px;background:var(--c2);overflow:hidden}
 .ac-q-bar-fill{height:100%;border-radius:4px;transition:width .5s}
 .ac-q-score{font-size:.7rem;font-weight:700;font-family:'Space Mono',monospace;width:28px;text-align:right;flex-shrink:0}
+
+/* ═══ MODAL ═══ */
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:999;align-items:center;justify-content:center;padding:20px}
+#modal.on{display:flex}
+.modal-box{background:var(--c1);border:1px solid var(--bd);border-radius:var(--r);padding:24px;width:min(820px,100%);max-height:87vh;overflow-y:auto;position:relative}
+.modal-title{font-size:.78rem;font-weight:700;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.07em;color:var(--t2);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bd);padding-right:80px}
+.modal-close{position:absolute;top:14px;right:14px;background:0;border:1px solid var(--bd);color:var(--t3);border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer;font-family:'DM Sans',sans-serif}.modal-close:hover{color:var(--t1);border-color:var(--t2)}
+.xpand{position:absolute;top:10px;right:10px;background:0;border:1px solid var(--bd);color:var(--t3);border-radius:4px;padding:2px 7px;font-size:.65rem;cursor:pointer;line-height:1.5;font-family:'DM Sans',sans-serif;z-index:2}
+.xpand:hover{color:var(--t1);border-color:var(--t2)}
+.ov-card,.ov-wc-card,.ts-card{position:relative}
 </style></head><body>
 
 <header class="hdr"><h1>{{ title }}</h1><div class="pills"><span class="pill" id="totPill">0 responses</span><span class="pill" id="ttPill" style="border-color:var(--pk);color:var(--pk)">0 turing</span><span class="pill" id="acPill" style="border-color:var(--pu);color:var(--pu)">0 acceptance</span><span class="pill on" id="stPill">● Ready</span></div></header>
@@ -221,9 +231,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 
 <!-- 3 per-question word clouds -->
 <div class="ov-wc-row">
-  <div class="ov-wc-card q0"><h3 style="color:var(--cy)">Q1 Word Cloud</h3><div class="qtext">{{ questions[0] }}</div><div class="ov-wc" id="ovWC0"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q1 responses yet</div></div></div>
-  <div class="ov-wc-card q1"><h3 style="color:var(--pu)">Q2 Word Cloud</h3><div class="qtext">{{ questions[1] }}</div><div class="ov-wc" id="ovWC1"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q2 responses yet</div></div></div>
-  <div class="ov-wc-card q2"><h3 style="color:var(--am)">Q3 Word Cloud</h3><div class="qtext">{{ questions[2] }}</div><div class="ov-wc" id="ovWC2"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q3 responses yet</div></div></div>
+  <div class="ov-wc-card q0"><button class="xpand" onclick="expandWC(0,'Q1 Word Cloud')">⤢ Expand</button><h3 style="color:var(--cy)">Q1 Word Cloud</h3><div class="qtext">{{ questions[0] }}</div><div class="ov-wc" id="ovWC0"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q1 responses yet</div></div></div>
+  <div class="ov-wc-card q1"><button class="xpand" onclick="expandWC(1,'Q2 Word Cloud')">⤢ Expand</button><h3 style="color:var(--pu)">Q2 Word Cloud</h3><div class="qtext">{{ questions[1] }}</div><div class="ov-wc" id="ovWC1"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q2 responses yet</div></div></div>
+  <div class="ov-wc-card q2"><button class="xpand" onclick="expandWC(2,'Q3 Word Cloud')">⤢ Expand</button><h3 style="color:var(--am)">Q3 Word Cloud</h3><div class="qtext">{{ questions[2] }}</div><div class="ov-wc" id="ovWC2"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q3 responses yet</div></div></div>
 </div>
 
 <div class="ov-grid" style="margin-top:20px">
@@ -237,6 +247,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 </div>
 <!-- Turing test snapshot on overview -->
 <div class="ts-card" id="ovTuring">
+  <button class="xpand" onclick="expandEl('AI vs Human — Turing Test Snapshot',$('ovTuring'))">⤢ Expand</button>
   <h3>🤖 AI vs Human — Turing Test Snapshot</h3>
   <div class="ts-grid" id="ovTuringGrid">
     <div class="ts-stat"><span class="n" id="ovTtot">0</span><span class="l">Respondents</span></div>
@@ -295,10 +306,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 <div class="tt-grid">
   <!-- Left: Accuracy by group -->
   <div class="ov-card">
+    <button class="xpand" onclick="expandEl('Accuracy by Job Group',$('ttJobBars'))">⤢ Expand</button>
     <h3>Accuracy by Job Group</h3>
     <div id="ttJobBars"><div class="ov-empty">No responses yet</div></div>
   </div>
   <div class="ov-card">
+    <button class="xpand" onclick="expandEl('Accuracy by Seniority',$('ttSenBars'))">⤢ Expand</button>
     <h3>Accuracy by Seniority</h3>
     <div id="ttSenBars"><div class="ov-empty">No responses yet</div></div>
     <h3 style="margin-top:16px">Average AI Ratings (1–5)</h3>
@@ -310,10 +323,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
     </div>
   </div>
   <div class="ov-card">
+    <button class="xpand" onclick="expandEl('Accuracy by Scenario',$('ttScBars'))">⤢ Expand</button>
     <h3>Accuracy by Scenario</h3>
     <div id="ttScBars"><div class="ov-empty">No responses yet</div></div>
   </div>
   <div class="ov-card">
+    <button class="xpand" onclick="expandEl('Tasks Respondents Would Allow AI to Do',$('ttTasks'))">⤢ Expand</button>
     <h3>Tasks Respondents Would Allow AI to Do</h3>
     <div id="ttTasks"><div class="ov-empty">No responses yet</div></div>
     <div style="margin-top:16px">
@@ -341,6 +356,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 </div></div>
 
 <div class="adm"><span class="tc" id="totC">Total: 0 responses · 0 survey</span><div style="display:flex;gap:6px"><button class="btn bg" onclick="exp()" style="font-size:.7rem;padding:5px 10px">Export JSON</button><button class="btn bg" onclick="rst()" style="font-size:.7rem;padding:5px 10px;color:var(--rd)">Reset All</button></div></div>
+
+<!-- ══════ MODAL ══════ -->
+<div id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕ Close</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
 
 <script>
 const QS={{questions|tojson}},QN=3;
@@ -463,6 +487,22 @@ function stopSpeech(q){
 function $(id){return document.getElementById(id)}
 function setS(t,c){let p=$('stPill');p.textContent='● '+t;p.style.borderColor=c;p.style.color=c}
 
+// ════════════════════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════════════════════
+let lastWCData=[null,null,null];
+let _md={};  // modal data store: id → {title, html}
+function openModal(title,html){$('modalTitle').textContent=title;$('modalBody').innerHTML=html;$('modal').classList.add('on')}
+function closeModal(){$('modal').classList.remove('on')}
+function expandWC(q,title){
+  openModal(title,'<div id="mWC" style="min-height:400px;display:flex;align-items:center;justify-content:center"></div>');
+  if(lastWCData[q]&&lastWCData[q].length)renderWordCloud($('mWC'),lastWCData[q],720,420);
+  else $('mWC').innerHTML='<div class="ov-empty">No responses yet</div>';
+}
+function openMD(id){if(_md[id])openModal(_md[id].t,_md[id].h)}
+function expandEl(title,el){openModal(title,el.innerHTML)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
 let currentPanel='ov';
 function go(id){
   currentPanel=id;
@@ -492,6 +532,7 @@ async function loadQ(q){
   try{let d=await(await fetch(`/api/q/${q}`)).json();
     if(d.stats.total===0){$(`qemp_${q}`).style.display='block';$(`qwcc_${q}`).style.display='none';$(`qstc_${q}`).style.display='none';$(`qfdc_${q}`).style.display='none';return}
     $(`qemp_${q}`).style.display='none';$(`qwcc_${q}`).style.display='block';$(`qstc_${q}`).style.display='block';$(`qfdc_${q}`).style.display='block';
+    lastWCData[q]=d.words;
     renderWordCloud($(`qwci_${q}`),d.words,600,320);
     let t=d.stats.total||1;$(`qpos_${q}`).textContent=d.stats.positive;$(`qneu_${q}`).textContent=d.stats.neutral;$(`qneg_${q}`).textContent=d.stats.negative;
     $(`qposf_${q}`).style.height=(d.stats.positive/t*100)+'%';$(`qneuf_${q}`).style.height=(d.stats.neutral/t*100)+'%';$(`qnegf_${q}`).style.height=(d.stats.negative/t*100)+'%';
@@ -508,6 +549,7 @@ async function loadOv(){
       if(qd.stats.total===0){
         wc.innerHTML='<div class="ov-empty" style="padding:20px;font-size:.8rem">No Q'+(i+1)+' responses yet</div>';
       }else{
+        lastWCData[i]=qd.words;
         renderWordCloud(wc,qd.words,380,240);
       }
     }
@@ -644,7 +686,8 @@ async function loadAccept(){
         const barCol=!avg?'#334155':avg>=3.5?'#22c55e':avg>=2.5?'#f59e0b':'#ef4444';
         rows+=`<div class="ac-q-row"><span class="ac-q-key">${key}</span><div class="ac-q-text">${q.question}</div><div class="ac-q-bar-wrap"><div class="ac-q-bar-track"><div class="ac-q-bar-fill" style="width:${pct}%;background:${barCol}"></div></div><span class="ac-q-score" style="color:${barCol}">${avg?avg.toFixed(1):'—'}</span></div></div>`;
       }
-      likertHTML+=`<div class="ac-likert-card" style="border-color:${col}33"><div class="ac-likert-title" style="color:${col}">Part ${part} &mdash; ${pd.title}</div>${rows}</div>`;
+      const mid=`lik_${part}`;_md[mid]={t:`Part ${part} \u2014 ${pd.title}`,h:rows};
+      likertHTML+=`<div class="ac-likert-card" style="border-color:${col}33;position:relative"><button class="xpand" onclick="openMD('${mid}')">⤢ Expand</button><div class="ac-likert-title" style="color:${col}">Part ${part} &mdash; ${pd.title}</div>${rows}</div>`;
     }
     $('acLikertSection').innerHTML=likertHTML||'<div class="ov-empty" style="padding:20px">No Likert data yet</div>';
   }catch(e){console.error('loadAccept error:',e)}

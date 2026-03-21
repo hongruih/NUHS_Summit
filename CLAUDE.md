@@ -12,23 +12,31 @@ python app.py
 
 Install dependencies (first time or after reset):
 ```bash
-pip install flask textblob qrcode pillow
+pip install -r requirements.txt
 ```
+
+Environment variables (copy `.env.example` to `.env` for local dev):
+- `PORT` — port the app listens on (default: `5001`; set automatically by Render/Railway)
+- `DATABASE_PATH` — path to the SQLite file (default: `booth_data.db`; set to e.g. `/data/booth_data.db` on Render with a persistent disk)
+- `FLASK_DEBUG` — set to `true` for local development only
 
 There is no build step, test suite, or linter configured.
 
 ## Architecture
 
-The entire application is a **single file**: `app.py`. There are no separate templates, static files, or modules.
+`app.py` (~496 lines) contains all routes and business logic. HTML lives in `templates/`.
 
-**Data persistence**: SQLite via `booth_data.db` (auto-created on startup by `init_db()`).
+**Data persistence**: SQLite via `booth_data.db` (path overridable via `DATABASE_PATH` env var; auto-created on startup by `init_db()`).
 
 **Key in-file sections** (separated by banner comments):
-- Lines ~46–127: Configuration — `QUESTIONS`, `STOP_WORDS`, `SCENARIOS` (Turing test clinical cases), `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`
-- Lines ~134–183: Database setup (`get_db`, `init_db`) — creates 4 tables: `sentiment_responses`, `turing_responses`, `turing_answers`, `turing_tasks`
-- Lines ~190–303: Business logic — `sentiment()` (TextBlob), `extract_words()` (word frequency), `get_turing_stats()` (analytics aggregations)
-- Lines ~309–476: Flask routes
-- Lines ~482+: HTML templates as Python strings (`TMPL` for the main dashboard, `SURVEY_TMPL` for the mobile survey page)
+- Lines ~47–128: Configuration — `QUESTIONS`, `STOP_WORDS`, `SCENARIOS` (Turing test clinical cases), `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`
+- Lines ~135–184: Database setup (`get_db`, `init_db`) — creates 4 tables: `sentiment_responses`, `turing_responses`, `turing_answers`, `turing_tasks`
+- Lines ~191–304: Business logic — `sentiment()` (TextBlob), `extract_words()` (word frequency), `get_turing_stats()` (analytics aggregations)
+- Lines ~310–480: Flask routes
+
+**Templates** (`templates/`):
+- `admin.html` — main 6-tab admin dashboard (rendered at `/`)
+- `survey_turing.html` — mobile Turing test survey (rendered at `/survey`)
 
 ## Routes
 
@@ -46,7 +54,7 @@ The entire application is a **single file**: `app.py`. There are no separate tem
 | `POST /api/reset` | Wipe all data from all tables |
 | `GET /api/export` | Export all data as JSON |
 
-## Dashboard Tabs
+## Admin Dashboard Tabs (current)
 
 1. **Live Overview** — aggregate word cloud + sentiment + Turing snapshot
 2–4. **Q1/Q2/Q3 Input** — record/type responses per question, per-question dashboard
@@ -60,3 +68,25 @@ The entire application is a **single file**: `app.py`. There are no separate tem
 - `turing_answers`: one row per scenario per respondent (guess, correctness, 4 ratings 1–5)
 - `turing_tasks`: which AI tasks each respondent trusts (multi-select)
 - The `ai_index` field in `SCENARIOS` (0 or 1) indicates which response is AI-generated; this is never exposed to the survey frontend
+
+## Active Refactor — Implementation Plan Status
+
+A major refactor is in progress. Steps are being implemented sequentially; each is independently testable before proceeding to the next.
+
+| Step | Description | Status |
+|------|-------------|--------|
+| 1 | Infrastructure: `requirements.txt`, env vars (`PORT`, `DATABASE_PATH`, `FLASK_DEBUG`), `.env.example` | ✅ Done |
+| 2 | Refactor templates into `templates/` directory; routes use `render_template()` | ✅ Done |
+| 3 | Add AI Acceptance Survey DB table (`acceptance_responses`) and API endpoints (`POST /api/acceptance/submit`, `GET /api/acceptance/stats`) | Next |
+| 4 | Participant landing page at `/`; admin moves to `/admin`; routing split for all survey URLs | — |
+| 5 | Sentiment survey: sequential participant flow, 4 questions, no word cloud | — |
+| 6 | Completion modal ("Thank you! Please approach our booth for a free gift!") | — |
+| 7 | AI Acceptance Survey Part A (biographical, multi/single-select) | — |
+| 8 | AI Acceptance Survey Parts B–F (Likert scale, 41 questions) | — |
+| 9 | Admin dashboard: integrate AI Acceptance Survey metrics | — |
+| 10 | Admin: expandable/modal views for all metric cards | — |
+| 11 | Admin: Turing Test filter by job group | — |
+| 12 | Excel export (`GET /api/export/excel`, 3-sheet `.xlsx`) | — |
+| 13 | Turing Test: add completion modal | — |
+| 14 | Vibrant design refresh, logo placeholder, credit line | — |
+| 15 | Mobile responsiveness audit across all templates | — |

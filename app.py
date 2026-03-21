@@ -129,6 +129,95 @@ TRUST_TASKS = ["Triaging symptoms", "Drafting clinical notes", "Patient educatio
                "Medication counselling", "Mental health screening", "Diagnostic support"]
 
 # ═══════════════════════════════════════════════════════
+# AI ACCEPTANCE SURVEY — CONFIG
+# ═══════════════════════════════════════════════════════
+ACCEPTANCE_PART_A = {
+    "age_group":        ["Under 30", "30–39", "40–49", "50–59", "60 or above"],
+    "gender":           ["Male", "Female"],
+    "disciplines":      ["Medicine", "Nursing", "Allied Health Professions", "Healthcare Research",
+                         "Healthcare Administration & Operations", "Health Informatics & IT", "Other"],
+    "years_healthcare": ["Less than 1 year", "1–5 years", "6–10 years", "11–20 years", "More than 20 years"],
+    "years_role":       ["Less than 1 year", "1–3 years", "4–7 years", "8–15 years", "More than 15 years"],
+    "seniority":        ["Student/Intern/Trainee", "Junior staff", "Mid-level staff",
+                         "Senior/Specialist", "Leadership/Director"],
+    "ai_frequency":     ["Always", "Often", "Sometimes", "Rarely", "Never"],
+    "ai_tools":         ["Commercial AI (ChatGPT, Gemini, Claude)",
+                         "Institutional AI (Medivoice, RussellGPT, BotNUHS, Notebuddy, etc.)",
+                         "Government AI (Pair, Transcribe, Tandem)",
+                         "Clinical Specific AI (AVAT)"],
+}
+
+# Likert questions per part. Keys match the JSON keys stored in the DB (e.g. "B1", "C3").
+ACCEPTANCE_LIKERT = {
+    "B": {
+        "title": "AI, Deskilling, and Upskilling",
+        "questions": {
+            "B1":  "I feel that relying on AI tools could cause healthcare professionals to lose core clinical skills over time.",
+            "B2":  "I feel that relying on AI tools could cause healthcare professionals to lose professional communication skills over time.",
+            "B3":  "I worry that overreliance on AI recommendations reduces the quality of independent clinical reasoning.",
+            "B4":  "I worry that early-career staff may not develop foundational competencies if AI handles too many tasks for them.",
+            "B5":  "AI in my department has already changed how much independent thinking is expected of staff.",
+            "B6":  "I am concerned that training programmes will adopt AI tools in response to availability rather than at the appropriate stage of a learner's development.",
+            "B7":  "I worry that educators are not adequately prepared to teach clinical reasoning skills in environments where AI tools are readily available.",
+            "B8":  "As AI tools are introduced into training programmes, I am concerned that trainees will review AI outputs before forming their own clinical assessment.",
+            "B9":  "I am concerned that as AI flattens the learning curve, early-career staff would miss opportunities to grapple with complex issues in order to foster adaptive expertise.",
+            "B10": "I am concerned that future healthcare providers will over-rely on AI, eroding their ability to develop essential skills like critical thinking, reasoning, and clinical decision-making.",
+            "B11": "I believe that AI tools can free up time for me to develop higher-order clinical skills.",
+            "B12": "I believe that reviewing AI recommendations can actively sharpen my clinical skills.",
+            "B13": "AI has the potential to standardise quality and raise performance across all staff levels.",
+            "B14": "I believe that AI assistance helps me focus more on interpersonal interaction and empathy.",
+        }
+    },
+    "C": {
+        "title": "Professional Identity and AI",
+        "questions": {
+            "C1": "I fear that AI will reduce the perceived expertise of healthcare professionals in my discipline in the eyes of the public.",
+            "C2": "If AI can perform the tasks I was trained for, my professional standing within healthcare may be undermined.",
+            "C3": "I fear that using AI will reduce my autonomy in making clinical or professional decisions.",
+            "C4": "Using AI would make it harder for me to fulfil my role as a healthcare provider.",
+            "C5": "I feel personally threatened by the idea of AI performing tasks central to my role.",
+            "C6": "AI could help me become a more effective and confident healthcare professional.",
+            "C7": "The use of AI would allow me to focus on the most meaningful aspects of my role.",
+        }
+    },
+    "D": {
+        "title": "Resistance to AI Adoption",
+        "questions": {
+            "D1": "I do not want AI to change the way I currently work.",
+            "D2": "I would prefer to rely on my own professional judgement rather than AI recommendations to make clinical or professional decisions.",
+            "D3": "I would feel uncomfortable if AI were to be heavily involved in decisions about my patients or work area.",
+            "D4": "I would be more open to using AI if it has been proven to improve patient outcomes or work efficiency.",
+            "D5": "If AI could reduce my administrative burden, I would be more open to using it.",
+            "D6": "I would be more likely to use AI tools if I could easily see how they benefit my specific role.",
+            "D7": "If my colleagues found AI tools useful, I would be more likely to adopt them too.",
+            "D8": "I would be influenced by how my peers or supervisors view the use of AI tools at work.",
+        }
+    },
+    "E": {
+        "title": "Perceived Value of AI",
+        "questions": {
+            "E1": "Overall, the benefits of AI in healthcare outweigh the risks or costs of implementing it.",
+            "E2": "AI tools in healthcare will improve the quality and accuracy of decisions in my department.",
+            "E3": "AI has the potential to reduce staff burnout by automating repetitive, time-consuming tasks.",
+            "E4": "AI will meaningfully improve the experience of patients in our system.",
+            "E5": "Overall, I believe AI will have a positive impact on my professional role.",
+        }
+    },
+    "F": {
+        "title": "Organisational Culture and Support for AI",
+        "questions": {
+            "F1": "My organisation's leadership actively ensures the responsible use of AI.",
+            "F2": "I feel psychologically safe to raise concerns or questions about AI in my workplace if it is implemented.",
+            "F3": "I have received adequate training to use AI tools confidently in my role.",
+            "F4": "I am aware of the limitations that come with AI tools.",
+            "F5": "I feel capable of critically evaluating and overriding AI recommendations when necessary.",
+            "F6": "My workplace has the technical infrastructure needed to support the effective implementation of AI tools.",
+            "F7": "I feel that my workplace will take into consideration feedback from its employees during the selection and deployment of AI tools.",
+        }
+    },
+}
+
+# ═══════════════════════════════════════════════════════
 # DATABASE SETUP
 # ═══════════════════════════════════════════════════════
 DB_PATH = os.environ.get("DATABASE_PATH", "booth_data.db")
@@ -178,6 +267,21 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         respondent_id TEXT NOT NULL,
         task TEXT NOT NULL
+    )""")
+    # AI Acceptance Survey responses
+    c.execute("""CREATE TABLE IF NOT EXISTS acceptance_responses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        participant_id TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        age_group TEXT,
+        gender TEXT,
+        disciplines TEXT,
+        years_healthcare TEXT,
+        years_role TEXT,
+        seniority TEXT,
+        ai_frequency TEXT,
+        ai_tools TEXT,
+        likert_answers TEXT
     )""")
     conn.commit()
     conn.close()
@@ -370,6 +474,7 @@ def api_reset():
     conn.execute("DELETE FROM turing_responses")
     conn.execute("DELETE FROM turing_answers")
     conn.execute("DELETE FROM turing_tasks")
+    conn.execute("DELETE FROM acceptance_responses")
     conn.commit()
     conn.close()
     return jsonify({"ok": True})
@@ -381,6 +486,7 @@ def api_export():
     for i in range(3):
         data[QUESTIONS[i]] = get_entries(i)
     data["turing_test"] = get_turing_stats()
+    data["acceptance_survey"] = api_acceptance_stats().get_json()
     return jsonify(data)
 
 
@@ -478,6 +584,109 @@ def qr_code():
     return send_file(buf, mimetype="image/png", download_name="survey_qr.png")
 
 
+# ═══════════════════════════════════════════════════════
+# ROUTES — AI ACCEPTANCE SURVEY
+# ═══════════════════════════════════════════════════════
+@app.route("/api/acceptance/submit", methods=["POST"])
+def api_acceptance_submit():
+    d = request.json or {}
+    part_a = d.get("part_a", {})
+    likert = d.get("likert_answers", {})
+
+    # Validate required Part A single-select fields
+    required = ["age_group", "gender", "years_healthcare", "years_role", "seniority", "ai_frequency"]
+    missing = [f for f in required if not part_a.get(f)]
+    if missing:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing)}"}), 400
+
+    participant_id = str(uuid.uuid4())[:8]
+    ts = datetime.now().isoformat()
+
+    conn = get_db()
+    conn.execute(
+        """INSERT INTO acceptance_responses
+           (participant_id, timestamp, age_group, gender, disciplines,
+            years_healthcare, years_role, seniority, ai_frequency, ai_tools, likert_answers)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (
+            participant_id, ts,
+            part_a.get("age_group", ""),
+            part_a.get("gender", ""),
+            json.dumps(part_a.get("disciplines", [])),
+            part_a.get("years_healthcare", ""),
+            part_a.get("years_role", ""),
+            part_a.get("seniority", ""),
+            part_a.get("ai_frequency", ""),
+            json.dumps(part_a.get("ai_tools", [])),
+            json.dumps(likert),
+        )
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "participant_id": participant_id})
+
+
+@app.route("/api/acceptance/stats")
+def api_acceptance_stats():
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM acceptance_responses ORDER BY id").fetchall()
+    conn.close()
+
+    total = len(rows)
+    if total == 0:
+        return jsonify({
+            "total_respondents": 0,
+            "part_a": {},
+            "likert_averages": {},
+        })
+
+    # Part A — frequency distributions for each categorical field
+    part_a_fields = ["age_group", "gender", "disciplines", "years_healthcare",
+                     "years_role", "seniority", "ai_frequency", "ai_tools"]
+    part_a_stats = {}
+    for field in part_a_fields:
+        counts = {}
+        for row in rows:
+            val = row[field] or ""
+            # disciplines and ai_tools are JSON lists
+            if field in ("disciplines", "ai_tools"):
+                items = json.loads(val) if val else []
+                for item in items:
+                    counts[item] = counts.get(item, 0) + 1
+            else:
+                counts[val] = counts.get(val, 0) + 1
+        part_a_stats[field] = counts
+
+    # Likert — average score per question key
+    sums = {}
+    counts_l = {}
+    for row in rows:
+        answers = json.loads(row["likert_answers"]) if row["likert_answers"] else {}
+        for key, val in answers.items():
+            try:
+                v = int(val)
+                sums[key] = sums.get(key, 0) + v
+                counts_l[key] = counts_l.get(key, 0) + 1
+            except (ValueError, TypeError):
+                pass
+
+    likert_averages = {}
+    for part_key, part_data in ACCEPTANCE_LIKERT.items():
+        part_avgs = {}
+        for q_key, q_text in part_data["questions"].items():
+            n = counts_l.get(q_key, 0)
+            avg = round(sums.get(q_key, 0) / n, 2) if n > 0 else None
+            part_avgs[q_key] = {"question": q_text, "avg": avg, "n": n}
+        likert_averages[part_key] = {
+            "title": part_data["title"],
+            "questions": part_avgs,
+        }
+
+    return jsonify({
+        "total_respondents": total,
+        "part_a": part_a_stats,
+        "likert_averages": likert_averages,
+    })
 
 
 if __name__ == "__main__":

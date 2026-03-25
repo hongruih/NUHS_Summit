@@ -4,6 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Running the App
 
+**Production (Gunicorn):**
+```bash
+source venv/bin/activate
+gunicorn app:app --bind 0.0.0.0:5001
+# Open http://localhost:5001
+```
+
+**Local dev (Flask built-in server):**
 ```bash
 source venv/bin/activate
 python app.py
@@ -16,9 +24,9 @@ pip install -r requirements.txt
 ```
 
 Environment variables (copy `.env.example` to `.env` for local dev):
-- `PORT` — port the app listens on (default: `5001`; set automatically by Render/Railway)
+- `PORT` — port the app listens on (default: `5001`; set automatically by Render/Railway); pass to Gunicorn via `--bind 0.0.0.0:$PORT`
 - `DATABASE_PATH` — path to the SQLite file (default: `booth_data.db`; set to e.g. `/data/booth_data.db` on Render with a persistent disk)
-- `FLASK_DEBUG` — set to `true` for local development only
+- `FLASK_DEBUG` — set to `true` for local development only (has no effect under Gunicorn)
 
 There is no build step, test suite, or linter configured.
 

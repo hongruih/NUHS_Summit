@@ -43,11 +43,13 @@ There is no build step, test suite, or linter configured.
 - Lines ~320–650: Flask routes
 
 **Templates** (`templates/`):
-- `landing.html` — participant landing page with 3 survey cards (rendered at `/`)
+- `landing.html` — participant landing page with 3 survey cards (rendered at `/`); clicking "AI Perspectives" opens an instruction modal before navigating
 - `admin.html` — main 6-tab admin dashboard (rendered at `/admin`)
 - `survey_turing.html` — mobile Turing test survey (rendered at `/survey/turing`)
-- `survey_sentiment.html` — sentiment survey stub (rendered at `/survey/sentiment`)
-- `survey_acceptance.html` — AI acceptance survey stub (rendered at `/survey/acceptance`)
+- `survey_sentiment.html` — sentiment survey (rendered at `/survey/sentiment`)
+- `survey_acceptance.html` — AI acceptance survey (rendered at `/survey/acceptance`)
+
+**Design system**: All templates use a Google-inspired light theme — white (`#ffffff`) / light grey (`#f1f3f4`) backgrounds, `#202124` primary text, `#5f6368` secondary text, `#dadce0` borders. Accent colours (indigo `#4f46e5`/`#6366f1`, pink `#ec4899`, purple `#a855f7`, cyan `#06b6d4`) are used for buttons, highlights, and gradients. Do not introduce dark backgrounds or light-on-dark text.
 
 ## Routes
 
@@ -57,8 +59,8 @@ There is no build step, test suite, or linter configured.
 | `GET /admin` | Main 6-tab dashboard (staff-facing) |
 | `GET /survey` | Redirects to `/survey/turing` |
 | `GET /survey/turing` | Mobile-friendly Turing test survey (attendee-facing, QR-accessible) |
-| `GET /survey/sentiment` | Sentiment survey (stub — Step 5) |
-| `GET /survey/acceptance` | AI Acceptance Survey (stub — Step 7) |
+| `GET /survey/sentiment` | Sentiment survey |
+| `GET /survey/acceptance` | AI Acceptance Survey |
 | `GET /qr` | Generates PNG QR code pointing to `/survey/turing` |
 | `POST /api/submit` | Submit a sentiment response (JSON: `text`, `question_index`) |
 | `GET /api/q/<int:q>` | Word cloud + stats for question index 0–2 |
@@ -87,24 +89,26 @@ There is no build step, test suite, or linter configured.
 - `acceptance_responses`: one row per respondent — Part A fields as individual columns; `disciplines` and `ai_tools` stored as JSON arrays; `likert_answers` stored as JSON object `{"B1": 3, ..., "F7": 5}` covering all 41 questions across Parts B–F
 - The `ai_index` field in `SCENARIOS` (0 or 1) indicates which response is AI-generated; this is never exposed to the survey frontend
 
-## Active Refactor — Implementation Plan Status
+## Completed Work
 
-A major refactor is in progress. Steps are being implemented sequentially; each is independently testable before proceeding to the next.
+All planned refactor steps are done. Post-refactor additions:
 
-| Step | Description | Status |
-|------|-------------|--------|
-| 1 | Infrastructure: `requirements.txt`, env vars (`PORT`, `DATABASE_PATH`, `FLASK_DEBUG`), `.env.example` | ✅ Done |
-| 2 | Refactor templates into `templates/` directory; routes use `render_template()` | ✅ Done |
-| 3 | Add AI Acceptance Survey DB table (`acceptance_responses`) and API endpoints (`POST /api/acceptance/submit`, `GET /api/acceptance/stats`) | ✅ Done |
-| 4 | Participant landing page at `/`; admin moves to `/admin`; routing split for all survey URLs | ✅ Done |
-| 5 | Sentiment survey: sequential participant flow, 4 questions, no word cloud | ✅ Done |
-| 6 | Completion modal — skipped (not appropriate for single-survey completion) | Skipped |
-| 7 | AI Acceptance Survey Part A (biographical, multi/single-select) | ✅ Done |
-| 8 | AI Acceptance Survey Parts B–F (Likert scale, 41 questions) | ✅ Done |
-| 9 | Admin dashboard: integrate AI Acceptance Survey metrics | ✅ Done |
+| # | Description | Status |
+|---|-------------|--------|
+| 1 | Infrastructure: `requirements.txt`, env vars, `.env.example` | ✅ Done |
+| 2 | Templates directory; `render_template()` throughout | ✅ Done |
+| 3 | AI Acceptance Survey DB table + API endpoints | ✅ Done |
+| 4 | Participant landing page `/`; admin at `/admin`; survey routing | ✅ Done |
+| 5 | Sentiment survey: sequential flow, 3 questions, mic + type input | ✅ Done |
+| 6 | Completion modal — skipped | Skipped |
+| 7 | AI Acceptance Survey Part A (biographical) | ✅ Done |
+| 8 | AI Acceptance Survey Parts B–F (Likert, 41 questions) | ✅ Done |
+| 9 | Admin: AI Acceptance metrics tab | ✅ Done |
 | 10 | Admin: expandable/modal views for all metric cards | ✅ Done |
 | 11 | Admin: Turing Test filter by job group | ✅ Done |
-| 12 | Excel export (`GET /api/export/excel`, 3-sheet `.xlsx`) | ✅ Done |
-| 13 | Turing Test: add completion modal | — |
-| 14 | Vibrant design refresh, logo placeholder, credit line | ✅ Done |
+| 12 | Excel export — `GET /api/export/excel`, 3-sheet `.xlsx`, wide-format pivot | ✅ Done |
+| 13 | Turing Test: completion modal | — (not implemented) |
+| 14 | Design refresh: logo, credit line, animated landing page | ✅ Done |
 | 15 | Mobile responsiveness audit across all templates | ✅ Done |
+| 16 | Light theme (Google-inspired) across all 5 templates | ✅ Done |
+| 17 | Landing page: instruction modal before AI Perspectives survey | ✅ Done |

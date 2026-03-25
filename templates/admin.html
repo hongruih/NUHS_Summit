@@ -6,12 +6,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.7/d3.layout.cloud.min.js"></script>
 <style>
-:root{--bg:#0a0e1a;--c1:#111827;--c2:#1a2235;--bd:#1e293b;--t1:#f1f5f9;--t2:#94a3b8;--t3:#64748b;
+:root{--bg:#f1f3f4;--c1:#ffffff;--c2:#f1f3f4;--bd:#dadce0;--t1:#202124;--t2:#5f6368;--t3:#80868b;
 --bl:#3b82f6;--cy:#06b6d4;--gn:#22c55e;--rd:#ef4444;--am:#f59e0b;--pu:#a855f7;--pk:#ec4899;--r:12px;--rs:8px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
 
-.hdr{padding:14px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);background:rgba(10,14,26,.95);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100}
+.hdr{padding:14px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);background:rgba(255,255,255,.97);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100}
 .hdr h1{font-size:1.15rem;font-weight:700;background:linear-gradient(135deg,var(--bl),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .pills{display:flex;gap:8px;align-items:center}
 .pill{font-family:'Space Mono',monospace;font-size:.68rem;padding:3px 10px;border-radius:20px;background:var(--c1);border:1px solid var(--bd);color:var(--t2)}
@@ -167,7 +167,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .adm{padding:8px 28px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;background:var(--bg)}
 .adm .tc{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--t3)}
 
-.no-speech{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:8px 12px;border-radius:var(--rs);font-size:.75rem;text-align:center;display:none}
+.no-speech{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);color:#b91c1c;padding:8px 12px;border-radius:var(--rs);font-size:.75rem;text-align:center;display:none}
 .no-speech.vis{display:block}
 
 #qlive_0,#qlive_1,#qlive_2{border-color:rgba(34,197,94,.3);background:linear-gradient(135deg,rgba(34,197,94,.03),rgba(6,182,212,.03))}
@@ -207,7 +207,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .ac-dist-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--pu),var(--pk));transition:width .5s}
 .ac-likert-card{border-radius:var(--r);border:1px solid rgba(168,85,247,.15);background:var(--c1);padding:14px 16px;margin-bottom:12px}
 .ac-likert-title{font-size:.68rem;font-weight:700;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.07em;color:var(--pu);margin-bottom:10px}
-.ac-q-row{display:grid;grid-template-columns:30px 1fr 160px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.ac-q-row{display:grid;grid-template-columns:30px 1fr 160px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f3f4}
 .ac-q-row:last-child{border-bottom:none}
 .ac-q-key{font-size:.62rem;font-family:'Space Mono',monospace;color:var(--t3)}
 .ac-q-text{font-size:.72rem;color:var(--t2);line-height:1.35}
@@ -754,7 +754,7 @@ async function loadAccept(){
       for(let[key,q]of Object.entries(pd.questions)){
         const avg=q.avg;
         const pct=avg?((avg-1)/4*100).toFixed(1):0;
-        const barCol=!avg?'#334155':avg>=3.5?'#22c55e':avg>=2.5?'#f59e0b':'#ef4444';
+        const barCol=!avg?'#bdc1c6':avg>=3.5?'#22c55e':avg>=2.5?'#f59e0b':'#ef4444';
         rows+=`<div class="ac-q-row"><span class="ac-q-key">${key}</span><div class="ac-q-text">${q.question}</div><div class="ac-q-bar-wrap"><div class="ac-q-bar-track"><div class="ac-q-bar-fill" style="width:${pct}%;background:${barCol}"></div></div><span class="ac-q-score" style="color:${barCol}">${avg?avg.toFixed(1):'—'}</span></div></div>`;
       }
       const mid=`lik_${part}`;_md[mid]={t:`Part ${part} \u2014 ${pd.title}`,h:rows};

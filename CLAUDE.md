@@ -32,22 +32,22 @@ There is no build step, test suite, or linter configured.
 
 ## Architecture
 
-`app.py` (~650 lines) contains all routes and business logic. HTML lives in `templates/`.
+`app.py` (~887 lines) contains all routes and business logic. HTML lives in `templates/`.
 
-**Data persistence**: SQLite via `booth_data.db` (path overridable via `DATABASE_PATH` env var; auto-created on startup by `init_db()`).
+**Data persistence**: SQLite via `booth_data.db` (path overridable via `DATABASE_PATH` env var; auto-created on startup by `init_db()`). WAL mode enabled (`PRAGMA journal_mode=WAL`) for concurrent read performance under Gunicorn.
 
 **Key in-file sections** (separated by banner comments):
-- Lines ~47–128: Configuration — `QUESTIONS`, `STOP_WORDS`, `SCENARIOS` (Turing test clinical cases), `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`, `ACCEPTANCE_PART_A`, `ACCEPTANCE_LIKERT`
-- Lines ~135–200: Database setup (`get_db`, `init_db`) — creates 5 tables: `sentiment_responses`, `turing_responses`, `turing_answers`, `turing_tasks`, `acceptance_responses`
-- Lines ~200–320: Business logic — `sentiment()` (TextBlob), `extract_words()` (word frequency), `get_turing_stats()` (analytics aggregations)
-- Lines ~320–650: Flask routes
+- Lines ~47–128: Configuration — `QUESTIONS` (4 open-ended questions), `STOP_WORDS`, `SCENARIOS` (5 Turing test clinical cases), `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`, `ACCEPTANCE_PART_A`, `ACCEPTANCE_LIKERT` (41 Likert questions across Parts B–F)
+- Lines ~134–299: Database setup (`get_db`, `init_db`) — creates 5 tables: `sentiment_responses`, `turing_responses`, `turing_answers`, `turing_tasks`, `acceptance_responses`; also runs a safe `ALTER TABLE` migration to add `participant_id` to `sentiment_responses`
+- Lines ~301–457: Business logic — `sentiment()` (TextBlob polarity/subjectivity), `extract_words()` (word frequency, top 80 words, stop-word filtered), `get_turing_stats()` (full analytics with optional job-group filter)
+- Lines ~460–887: Flask routes — participant pages, admin, all API endpoints, Excel export
 
 **Templates** (`templates/`):
-- `landing.html` — participant landing page with 3 survey cards (rendered at `/`); clicking "AI Perspectives" opens an instruction modal before navigating
+- `landing.html` — participant landing page; 3 survey cards in order: AI vs Human → AI Perspectives → AI Acceptance Survey; clicking "AI Perspectives" opens an instruction modal before navigating; mobile-scroll-safe (no `overflow:hidden` on body, `justify-content:flex-start` on small screens with safe-area bottom padding)
 - `admin.html` — main 6-tab admin dashboard (rendered at `/admin`)
 - `survey_turing.html` — mobile Turing test survey (rendered at `/survey/turing`)
-- `survey_sentiment.html` — sentiment survey (rendered at `/survey/sentiment`)
-- `survey_acceptance.html` — AI acceptance survey (rendered at `/survey/acceptance`)
+- `survey_sentiment.html` — sentiment survey with microphone + text input (rendered at `/survey/sentiment`)
+- `survey_acceptance.html` — AI acceptance survey (rendered at `/survey/acceptance`); first screen is a consent/intro step (anonymous notice + ARCHIVE research consent); clicking "Begin Survey" proceeds to the 13-step question flow (8 Part A biographical + 5 Likert parts B–F)
 
 **Design system**: All templates use a Google-inspired light theme — white (`#ffffff`) / light grey (`#f1f3f4`) backgrounds, `#202124` primary text, `#5f6368` secondary text, `#dadce0` borders. Accent colours (indigo `#4f46e5`/`#6366f1`, pink `#ec4899`, purple `#a855f7`, cyan `#06b6d4`) are used for buttons, highlights, and gradients. Do not introduce dark backgrounds or light-on-dark text.
 
@@ -99,7 +99,7 @@ All planned refactor steps are done. Post-refactor additions:
 | 2 | Templates directory; `render_template()` throughout | ✅ Done |
 | 3 | AI Acceptance Survey DB table + API endpoints | ✅ Done |
 | 4 | Participant landing page `/`; admin at `/admin`; survey routing | ✅ Done |
-| 5 | Sentiment survey: sequential flow, 3 questions, mic + type input | ✅ Done |
+| 5 | Sentiment survey: sequential flow, 4 questions, mic + type input | ✅ Done |
 | 6 | Completion modal — skipped | Skipped |
 | 7 | AI Acceptance Survey Part A (biographical) | ✅ Done |
 | 8 | AI Acceptance Survey Parts B–F (Likert, 41 questions) | ✅ Done |
@@ -112,3 +112,7 @@ All planned refactor steps are done. Post-refactor additions:
 | 15 | Mobile responsiveness audit across all templates | ✅ Done |
 | 16 | Light theme (Google-inspired) across all 5 templates | ✅ Done |
 | 17 | Landing page: instruction modal before AI Perspectives survey | ✅ Done |
+| 18 | AI Acceptance Survey: consent/intro screen as step 0 | ✅ Done |
+| 19 | Landing page: survey card order changed to AI vs Human → AI Perspectives → AI Acceptance Survey | ✅ Done |
+| 20 | Landing page: mobile scroll fix — removed `overflow:hidden`, added mobile media query with `justify-content:flex-start` and safe-area bottom padding | ✅ Done |
+| 21 | Logo size tuned across all 5 templates (inline `height` on `<img>` only) | ✅ Done |

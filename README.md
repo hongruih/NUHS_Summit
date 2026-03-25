@@ -1,0 +1,430 @@
+# NUHS Summit — AI Surveys App
+
+An interactive, real-time audience engagement tool built for the NUHS Summit 2026. Runs three concurrent surveys — a live sentiment word-cloud booth, an AI-vs-human Turing test, and a structured AI acceptance questionnaire — with a staff-facing admin dashboard and full data export.
+
+---
+
+## Table of Contents
+
+1. [Project Overview](#project-overview)
+2. [Tech Stack](#tech-stack)
+3. [Installation](#installation)
+4. [Running the App](#running-the-app)
+5. [Environment Variables](#environment-variables)
+6. [Usage](#usage)
+7. [File Structure](#file-structure)
+8. [Routes Reference](#routes-reference)
+9. [Admin Dashboard](#admin-dashboard)
+10. [Data Model](#data-model)
+11. [API Reference](#api-reference)
+12. [Exporting Data](#exporting-data)
+13. [Design System](#design-system)
+
+---
+
+## Project Overview
+
+The app serves two audiences simultaneously:
+
+**Participants (attendees)** access a mobile-friendly landing page at `/` that presents three survey cards:
+
+| Survey | Route | Description |
+|---|---|---|
+| AI vs Human | `/survey/turing` | Read 5 clinical scenarios and guess which response was written by AI vs a real doctor; rate trust, empathy, safety, and usefulness |
+| AI Perspectives | `/survey/sentiment` | Answer 4 open-ended questions about AI in healthcare; responses are transcribed (mic or typed) and analysed in real time |
+| AI Acceptance Survey | `/survey/acceptance` | 13-step structured survey — 8 biographical questions (Part A) followed by 41 Likert-scale statements across 5 thematic parts (B–F) |
+
+**Staff (admin)** access a 6-tab dashboard at `/admin` that shows live word clouds, sentiment distributions, Turing test accuracy analytics, and AI acceptance metrics. All data persists in SQLite and survives server restarts.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Python 3, Flask |
+| Production server | Gunicorn |
+| Database | SQLite (WAL mode) via `sqlite3` stdlib |
+| Sentiment analysis | TextBlob |
+| Word frequency | Python `collections.Counter` |
+| QR code generation | `qrcode` + `Pillow` |
+| Excel export | `openpyxl` |
+| Config | `python-dotenv` |
+| Frontend | Vanilla HTML/CSS/JS — no build step, no framework |
+
+---
+
+## Installation
+
+**Prerequisites:** Python 3.9+ and `pip`.
+
+```bash
+# 1. Clone or download the repository
+cd "NUHS Summit/App"
+
+# 2. Create and activate a virtual environment
+python3 -m venv venv
+source venv/bin/activate        # macOS / Linux
+# venv\Scripts\activate         # Windows
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Copy the example env file (edit values as needed)
+cp .env.example .env
+```
+
+> **TextBlob corpora** — on first run TextBlob may need its punkt tokeniser. If you see a corpus error, run:
+> ```bash
+> python -m textblob.download_corpora
+> ```
+
+---
+
+## Running the App
+
+**Production (Gunicorn — recommended):**
+```bash
+source venv/bin/activate
+gunicorn app:app --bind 0.0.0.0:5001
+# Open http://localhost:5001
+```
+
+With a custom port (e.g. on Render/Railway where `PORT` is set automatically):
+```bash
+gunicorn app:app --bind 0.0.0.0:$PORT
+```
+
+**Local development (Flask built-in server):**
+```bash
+source venv/bin/activate
+python app.py
+# Open http://localhost:5001
+```
+
+There is no build step. The database file (`booth_data.db`) is created automatically on first startup.
+
+---
+
+## Environment Variables
+
+Copy `.env.example` to `.env` for local use. On Render/Railway, set these in the hosting dashboard.
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `5001` | Port the app listens on. Set automatically by Render/Railway. Pass to Gunicorn via `--bind 0.0.0.0:$PORT`. |
+| `DATABASE_PATH` | `booth_data.db` | Path to the SQLite file. On Render with a persistent disk, set to the mount path e.g. `/data/booth_data.db`. |
+| `FLASK_DEBUG` | `false` | Set to `true` for local development only. Has no effect under Gunicorn. |
+
+---
+
+## Usage
+
+### As a Participant
+
+1. Navigate to `http://<host>/` on any device (phone, tablet, or desktop).
+2. Choose a survey card:
+   - **AI vs Human** — read 5 clinical scenarios, guess which response is AI, and rate each one.
+   - **AI Perspectives** — tap the mic or type answers to 4 open-ended questions; submit each one individually.
+   - **AI Acceptance Survey** — complete a consent/intro screen, then work through 8 biographical questions followed by 41 Likert statements across 5 parts.
+3. All surveys are self-paced and fully mobile-responsive.
+
+### As an Admin (Staff)
+
+1. Navigate to `http://<host>/admin`.
+2. Use the 6 tabs to monitor live responses, view word clouds and sentiment, and analyse Turing test results by job group or seniority.
+3. Use the **Reset** button (Live Overview tab) to wipe all data between sessions.
+4. Download a full `.xlsx` export from the **Export** button (3-sheet workbook).
+
+### QR Code
+
+A PNG QR code pointing to `/survey/turing` is available at:
+```
+http://<host>/qr
+```
+Print or display this at the booth so attendees can scan and go straight to the Turing test survey.
+
+---
+
+## File Structure
+
+```
+App/
+├── app.py                    # All routes, business logic, and configuration (~887 lines)
+├── requirements.txt          # Python dependencies
+├── .env.example              # Environment variable template
+├── booth_data.db             # SQLite database (auto-created; not committed)
+│
+├── templates/
+│   ├── landing.html          # Participant landing page — 3 survey cards at /
+│   ├── admin.html            # 6-tab staff dashboard at /admin
+│   ├── survey_turing.html    # AI vs Human Turing test survey at /survey/turing
+│   ├── survey_sentiment.html # AI Perspectives sentiment survey at /survey/sentiment
+│   └── survey_acceptance.html# AI Acceptance Survey at /survey/acceptance
+│
+├── static/
+│   ├── HCRD.png              # Organisation logo (displayed in all page headers)
+│   └── HCRD2.png             # Alternate logo asset
+│
+└── venv/                     # Virtual environment (not committed)
+```
+
+### Key sections inside `app.py`
+
+| Lines | Section |
+|---|---|
+| 1–37 | Module docstring and imports |
+| 47–68 | `QUESTIONS` (4 open-ended) and `STOP_WORDS` |
+| 70–126 | `SCENARIOS` — 5 clinical Turing test cases with `ai_index` ground truth |
+| 128–133 | `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS` |
+| 134–221 | `ACCEPTANCE_PART_A` and `ACCEPTANCE_LIKERT` (Parts B–F, 41 questions) |
+| 223–299 | Database: `get_db()`, `init_db()` — 5 tables + migration |
+| 301–341 | Sentiment helpers: `sentiment()`, `extract_words()`, `get_entries()`, `stats_for()` |
+| 343–457 | `get_turing_stats()` — full analytics with optional job-group filter |
+| 460–887 | Flask routes (participant pages, admin, all API endpoints, Excel export) |
+
+---
+
+## Routes Reference
+
+### Page routes
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/` | Participant landing page — 3 survey cards |
+| `GET` | `/admin` | Staff admin dashboard (6 tabs) |
+| `GET` | `/survey` | Redirects to `/survey/turing` |
+| `GET` | `/survey/turing` | AI vs Human Turing test survey |
+| `GET` | `/survey/sentiment` | AI Perspectives sentiment survey |
+| `GET` | `/survey/acceptance` | AI Acceptance Survey (consent screen + 13 steps) |
+| `GET` | `/qr` | QR code PNG pointing to `/survey/turing` |
+
+### API routes
+
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/api/submit` | Submit a sentiment response — body: `{text, question_index, participant_id?}` |
+| `GET` | `/api/q/<int:q>` | Word cloud + stats + last 15 entries for question index 0–3 |
+| `GET` | `/api/all` | All questions' word clouds + sentiment + Turing snapshot |
+| `POST` | `/api/turing/submit` | Submit a completed Turing test — body: `{respondent_id?, job_group, seniority, answers[], tasks[]}` |
+| `GET` | `/api/turing/stats` | Full Turing test analytics; optional `?job_group=` filter |
+| `GET` | `/api/turing/scenarios` | Scenarios without AI labels — used by the survey frontend |
+| `POST` | `/api/acceptance/submit` | Submit AI Acceptance Survey — body: `{part_a: {...}, likert_answers: {B1: 3, ...}}` |
+| `GET` | `/api/acceptance/stats` | Acceptance survey analytics — Part A distributions + Likert averages |
+| `POST` | `/api/reset` | Wipe all data from all 5 tables |
+| `GET` | `/api/export` | Full JSON export of all data |
+| `GET` | `/api/export/excel` | Download 3-sheet `.xlsx` export |
+
+---
+
+## Admin Dashboard
+
+The admin dashboard (`/admin`) has 6 tabs:
+
+| Tab | Contents |
+|---|---|
+| **Live Overview** | Aggregate word cloud across all questions, overall sentiment distribution, Turing test snapshot (total respondents, overall accuracy) |
+| **Q1 Input** | Microphone / text input for Question 1; per-question word cloud and sentiment |
+| **Q2 Input** | Same as Q1 for Question 2 |
+| **Q3 Input** | Same as Q1 for Question 3 |
+| **Per-Q Dashboard** | All 3 questions' word clouds and sentiment distributions side-by-side |
+| **AI vs Human** | Live Turing test results: overall accuracy, accuracy by job group and seniority, per-scenario breakdown, average trust/empathy/safety/usefulness ratings, trusted AI tasks chart; filterable by job group |
+
+All metric cards are expandable/modal for full-screen viewing during presentations.
+
+---
+
+## Data Model
+
+Five SQLite tables, all created by `init_db()` on startup:
+
+### `sentiment_responses`
+Stores free-text audience responses with pre-computed sentiment.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER PK | Auto-increment |
+| `question_index` | INTEGER | 0–3 (maps to `QUESTIONS` list) |
+| `text` | TEXT | Raw response |
+| `polarity` | REAL | TextBlob polarity −1.0 to +1.0 |
+| `subjectivity` | REAL | TextBlob subjectivity 0.0 to 1.0 |
+| `label` | TEXT | `Positive` / `Negative` / `Neutral` |
+| `emoji` | TEXT | Display emoji |
+| `color` | TEXT | Hex colour for UI |
+| `timestamp` | TEXT | ISO 8601 |
+| `participant_id` | TEXT | Optional; links responses across questions for the same person |
+
+### `turing_responses`
+One row per Turing test survey respondent.
+
+| Column | Type | Notes |
+|---|---|---|
+| `respondent_id` | TEXT | Short UUID (8 chars) |
+| `job_group` | TEXT | Selected from `JOB_GROUPS` |
+| `seniority` | TEXT | Selected from `SENIORITY_LEVELS` |
+| `timestamp` | TEXT | ISO 8601 |
+
+### `turing_answers`
+One row per scenario per respondent.
+
+| Column | Type | Notes |
+|---|---|---|
+| `respondent_id` | TEXT | FK to `turing_responses` |
+| `scenario_id` | TEXT | e.g. `s1`–`s5` |
+| `guessed_ai_index` | INTEGER | 0 or 1 — which response the participant thought was AI |
+| `correct` | INTEGER | 1 if correct, 0 if not |
+| `rating_trust` | INTEGER | 1–5 |
+| `rating_empathy` | INTEGER | 1–5 |
+| `rating_safety` | INTEGER | 1–5 |
+| `rating_usefulness` | INTEGER | 1–5 |
+| `timestamp` | TEXT | ISO 8601 |
+
+### `turing_tasks`
+Multi-select trust tasks; one row per task per respondent.
+
+| Column | Type | Notes |
+|---|---|---|
+| `respondent_id` | TEXT | FK to `turing_responses` |
+| `task` | TEXT | Selected from `TRUST_TASKS` |
+
+### `acceptance_responses`
+One row per AI Acceptance Survey respondent.
+
+| Column | Type | Notes |
+|---|---|---|
+| `participant_id` | TEXT | Short UUID (8 chars) |
+| `timestamp` | TEXT | ISO 8601 |
+| `age_group` | TEXT | Part A |
+| `gender` | TEXT | Part A |
+| `disciplines` | TEXT | JSON array e.g. `["Medicine","Nursing"]` |
+| `years_healthcare` | TEXT | Part A |
+| `years_role` | TEXT | Part A |
+| `seniority` | TEXT | Part A |
+| `ai_frequency` | TEXT | Part A |
+| `ai_tools` | TEXT | JSON array of selected tools |
+| `likert_answers` | TEXT | JSON object e.g. `{"B1": 3, "B2": 4, ..., "F7": 5}` covering all 41 questions |
+
+> The `ai_index` field in `SCENARIOS` (0 or 1) records which response is AI-generated. It is **never** sent to the survey frontend — only used server-side to score answers.
+
+---
+
+## API Reference
+
+### Submit a sentiment response
+
+```
+POST /api/submit
+Content-Type: application/json
+
+{
+  "text": "I think AI could help with documentation...",
+  "question_index": 0,
+  "participant_id": "abc12345"   // optional
+}
+```
+
+Response:
+```json
+{
+  "entry": {
+    "text": "...",
+    "sentiment": { "polarity": 0.3, "subjectivity": 0.6, "label": "Positive", "emoji": "😊", "color": "#22c55e" },
+    "timestamp": "2026-03-25T10:00:00"
+  }
+}
+```
+
+### Submit a Turing test survey
+
+```
+POST /api/turing/submit
+Content-Type: application/json
+
+{
+  "job_group": "Nurse",
+  "seniority": "Mid-career (5–15 years)",
+  "answers": [
+    {
+      "scenario_id": "s1",
+      "guessed_ai_index": 1,
+      "ratings": { "trust": 3, "empathy": 4, "safety": 3, "usefulness": 2 }
+    }
+  ],
+  "tasks": ["Triaging symptoms", "Patient education"]
+}
+```
+
+Response includes `results[]` with `correct`, `ai_index`, and `explanation` per scenario.
+
+### Submit an AI Acceptance Survey
+
+```
+POST /api/acceptance/submit
+Content-Type: application/json
+
+{
+  "part_a": {
+    "age_group": "30–39",
+    "gender": "Female",
+    "disciplines": ["Medicine"],
+    "years_healthcare": "6–10 years",
+    "years_role": "4–7 years",
+    "seniority": "Mid-level staff",
+    "ai_frequency": "Sometimes",
+    "ai_tools": ["Commercial AI (ChatGPT, Gemini, Claude)"]
+  },
+  "likert_answers": {
+    "B1": 4, "B2": 3, "B3": 5,
+    "C1": 2,
+    "D1": 3,
+    "E1": 4,
+    "F1": 3
+  }
+}
+```
+
+---
+
+## Exporting Data
+
+### JSON export
+
+```
+GET /api/export
+```
+
+Returns a single JSON object containing all sentiment responses (keyed by question text), full Turing test stats, and acceptance survey stats.
+
+### Excel export
+
+```
+GET /api/export/excel
+```
+
+Downloads a `.xlsx` file (`nuhs_summit_YYYYMMDD_HHMM.xlsx`) with three sheets:
+
+| Sheet | Format | Contents |
+|---|---|---|
+| **Sentiment Responses** | Wide (one row per participant) | Participant ID + Q1–Q4 transcript, sentiment label, polarity + timestamp |
+| **Turing Test** | Wide (one row per respondent) | Participant ID, job group, seniority, trusted tasks + per-scenario correct/ratings |
+| **AI Acceptance Survey** | Wide (one row per respondent) | All Part A fields + one column per Likert question (full question text as header) |
+
+---
+
+## Design System
+
+All templates use a Google Material Design-inspired light theme. Do not introduce dark backgrounds or light-on-dark text.
+
+| Token | Value | Usage |
+|---|---|---|
+| Background | `#ffffff` / `#f1f3f4` | Page and card backgrounds |
+| Primary text | `#202124` | Headings and body |
+| Secondary text | `#5f6368` | Subtitles and hints |
+| Tertiary text | `#80868b` | Credits, timestamps |
+| Border | `#dadce0` | Card outlines, dividers |
+| Indigo accent | `#4f46e5` / `#6366f1` | Primary buttons, active states |
+| Purple accent | `#a855f7` / `#9333ea` | Acceptance survey highlights |
+| Pink accent | `#ec4899` / `#db2777` | Landing page gradients |
+| Cyan accent | `#06b6d4` | Admin charts |
+
+**Logo**: `HCRD.png` from `/static/`. Controlled via inline `height` on the `<img>` tag in each template — do not modify the image file.

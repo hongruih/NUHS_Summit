@@ -322,10 +322,33 @@
     <p>NUH AI Summit 2026 &middot; Your responses are anonymous</p>
   </div>
 
-  <div class="progress" id="progress"></div>
+  <div class="progress" id="progress" style="display:none"></div>
+
+  <!-- ── Intro / Consent screen ── -->
+  <div id="intro-screen">
+    <div class="card">
+      <div class="step-label">Before You Begin</div>
+      <div class="question-text" style="margin-bottom:14px">AI Acceptance Survey</div>
+      <p style="font-size:0.9rem;color:#5f6368;line-height:1.6;margin-bottom:16px">
+        Thank you for taking the time to complete this survey. Your participation is greatly appreciated and helps advance research into AI adoption in healthcare.
+      </p>
+      <div style="background:#f8f9fa;border:1px solid #dadce0;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+        <p style="font-size:0.85rem;color:#202124;line-height:1.6">
+          <strong>Anonymous:</strong> All responses are completely anonymous. No personally identifiable information is collected or stored.
+        </p>
+        <p style="font-size:0.85rem;color:#202124;line-height:1.6">
+          <strong>Consent:</strong> By clicking <em>Begin Survey</em>, you agree to allow ARCHIVE to use your anonymised responses for research purposes.
+        </p>
+      </div>
+    </div>
+    <div class="nav-row">
+      <a class="btn-back-step" href="/" style="text-decoration:none;display:flex;align-items:center;justify-content:center">&#8592; Go Back</a>
+      <button class="btn-next" onclick="startSurvey()">Begin Survey &#8594;</button>
+    </div>
+  </div>
 
   <!-- ── Step card ── -->
-  <div id="question-screen">
+  <div id="question-screen" style="display:none">
     <div class="card" id="step-card">
       <!-- filled by JS -->
     </div>
@@ -589,9 +612,14 @@
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // ── Init ───────────────────────────────────────────────
-  buildDots();
-  renderStep(0);
+  // ── Intro → Survey transition ──────────────────────────
+  function startSurvey() {
+    document.getElementById('intro-screen').style.display = 'none';
+    document.getElementById('question-screen').style.display = 'block';
+    document.getElementById('progress').style.display = 'flex';
+    buildDots();
+    renderStep(0);
+  }
 </script>
 
 </body>

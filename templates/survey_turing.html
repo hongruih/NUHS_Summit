@@ -90,7 +90,9 @@
 <div class="step on" id="step_demo">
   <div class="card">
     <h3>About You</h3>
-    <div class="sel-group"><label>Your Role / Job Group</label><div id="jg_opts"></div></div>
+    <div class="sel-group"><label>Your Role / Job Group</label><div id="jg_opts"></div>
+      <input type="text" id="jg_other_input" placeholder="Please specify your role…" style="display:none;margin-top:8px;width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #dadce0;border-radius:10px;font-size:0.95rem;color:#202124;outline:none;" oninput="onOtherInput(this)">
+    </div>
     <div class="sel-group"><label>Seniority Level</label><div id="sn_opts"></div></div>
   </div>
   <button class="btn bp" onclick="startScenarios()">Start Survey →</button>
@@ -149,7 +151,18 @@ function buildDemo(){
   let sh='';SENIORITY.forEach(s=>{sh+=`<div class="sel-opt" onclick="pickSN(this,'${s}')">${s}</div>`});$('sn_opts').innerHTML=sh;
 }
 
-function pickJG(el,v){selJobGroup=v;document.querySelectorAll('#jg_opts .sel-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel')}
+function pickJG(el,v){
+  selJobGroup=v;
+  document.querySelectorAll('#jg_opts .sel-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  let inp=$('jg_other_input');
+  if(v==='Other'){inp.style.display='block';inp.focus();selJobGroup='Other';}
+  else{inp.style.display='none';inp.value='';}
+}
+function onOtherInput(inp){
+  let txt=inp.value.trim();
+  selJobGroup=txt?'Other; '+txt:'Other';
+}
 function pickSN(el,v){selSeniority=v;document.querySelectorAll('#sn_opts .sel-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel')}
 
 // Build scenario steps
@@ -208,6 +221,8 @@ function goToStep(n){
 
 function startScenarios(){
   if(!selJobGroup||!selSeniority){alert('Please select your role and seniority level');return}
+  let inp=$('jg_other_input');
+  if(inp.style.display!=='none'&&!inp.value.trim()){alert('Please specify your role in the text field');inp.focus();return}
   goToStep(1);
 }
 

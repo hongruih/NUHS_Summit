@@ -56,6 +56,11 @@ except Exception:
     _nlp = None
     _SPACY_OK = False
 
+# Profanity filter — screens submissions and word cloud output
+# Install: pip install better-profanity
+from better_profanity import profanity as _profanity
+_profanity.load_censor_words()
+
 APP_TITLE = "AI Perspectives — Live Sentiment Booth"
 QUESTIONS = [
     "What changes, if any, do you anticipate AI bringing to your work?",
@@ -356,12 +361,15 @@ def extract_words(texts):
             and token.is_alpha
             and len(token.lemma_) > 2
             and token.lemma_.lower() not in spacy_stops
+            and not _profanity.contains_profanity(token.lemma_)
         ]
         freq = Counter(lemmas)
     else:
         # Original fallback: regex strip → split → filter stop words
         cleaned = re.sub(r"[^a-zA-Z\s]", "", combined.lower())
-        words = [w for w in cleaned.split() if w not in STOP_WORDS and len(w) > 2]
+        words = [w for w in cleaned.split()
+                 if w not in STOP_WORDS and len(w) > 2
+                 and not _profanity.contains_profanity(w)]
         freq = Counter(words)
 
     return [{"text": w, "value": c} for w, c in freq.most_common(80)]
@@ -525,6 +533,8 @@ def api_submit():
     pid = (d.get("participant_id") or "").strip() or None
     if not t:
         return jsonify({"error": "Empty"}), 400
+    if _profanity.contains_profanity(t):
+        return jsonify({"error": "Inappropriate content"}), 400
     s = sentiment(t)
     conn = get_db()
     conn.execute("INSERT INTO sentiment_responses (question_index,text,polarity,subjectivity,label,emoji,color,timestamp,participant_id) VALUES (?,?,?,?,?,?,?,?,?)",

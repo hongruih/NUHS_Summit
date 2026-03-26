@@ -50,7 +50,7 @@ There is no build step, test suite, or linter configured.
 **Key in-file sections** (separated by banner comments):
 - Lines ~47–128: Configuration — `QUESTIONS` (4 open-ended questions), `STOP_WORDS`, `SCENARIOS` (5 Turing test clinical cases), `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`, `ACCEPTANCE_PART_A`, `ACCEPTANCE_LIKERT` (41 Likert questions across Parts B–F)
 - Lines ~134–299: Database setup (`get_db`, `init_db`) — creates 5 tables: `sentiment_responses`, `turing_responses`, `turing_answers`, `turing_tasks`, `acceptance_responses`; also runs a safe `ALTER TABLE` migration to add `participant_id` to `sentiment_responses`
-- Lines ~301–457: Business logic — `sentiment()` (TextBlob polarity/subjectivity), `extract_words()` (spaCy lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words → top 80 words; falls back to regex Counter if spaCy unavailable), `get_turing_stats()` (full analytics with optional job-group filter)
+- Lines ~301–457: Business logic — `sentiment()` (TextBlob polarity/subjectivity), `extract_words()` (spaCy lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words + profanity filter → top 80 words; falls back to regex Counter if spaCy unavailable), `get_turing_stats()` (full analytics with optional job-group filter)
 - Lines ~460–887: Flask routes — participant pages, admin, all API endpoints, Excel export
 
 **Templates** (`templates/`):
@@ -145,3 +145,5 @@ All planned refactor steps are done. Post-refactor additions:
 | 26 | Admin status bar: AI Perspectives count fixed to use `d['0'].stats.total` (Q1 response count = unique participants) instead of aggregate row sum | ✅ Done |
 | 27 | Admin tabs: renamed "Per-Question Dashboard" → "💬 AI Perspectives"; reordered right group to AI vs Human → AI Perspectives → AI Acceptance | ✅ Done |
 | 28 | Admin tabs: restored right-alignment by moving `margin-left:auto` from `.tab.dt` to `.tab.tt`; colour-coded AI Perspectives tab with `var(--cy)` to match status bar pill | ✅ Done |
+| 29 | Profanity filter (`better-profanity`): blocks submission at `POST /api/submit` (returns 400 if detected); excludes profane lemmas/words from word cloud output in `extract_words()` | ✅ Done |
+| 30 | spaCy-based `extract_words()`: lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words; graceful fallback to Counter if spaCy unavailable | ✅ Done |

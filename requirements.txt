@@ -8,3 +8,4 @@ gunicorn
 spacy>=3.0.0
 # After installing spaCy, download the English model separately:
 #   python -m spacy download en_core_web_sm
+better-profanity

@@ -263,7 +263,7 @@
       text-align: center;
       padding-top: 40px;
     }
-    .done-icon { font-size: 3.5rem; margin-bottom: 20px; }
+    .done-icon { font-size: 5.25rem; margin-bottom: 20px; }
     #done-screen h2 {
       font-size: 1.6rem;
       font-weight: 800;
@@ -605,6 +605,7 @@
       document.getElementById('done-screen').style.display = 'block';
       updateDots(TOTAL_STEPS);
       window.scrollTo(0, 0);
+      launchConfetti();
     } catch (e) {
       document.getElementById('error-msg').textContent = 'Something went wrong. Please try again.';
       btn.disabled = false;
@@ -617,6 +618,53 @@
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  // ── Confetti ────────────────────────────────────────────
+  function launchConfetti() {
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const COLOURS = ['#a855f7','#6366f1','#ec4899','#c084fc','#818cf8','#f0abfc'];
+    const COUNT = 60;
+    const particles = Array.from({length: COUNT}, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height * 0.5,
+      w: 6 + Math.random() * 6,
+      h: 3 + Math.random() * 4,
+      colour: COLOURS[Math.floor(Math.random() * COLOURS.length)],
+      rot: Math.random() * Math.PI * 2,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: 1.5 + Math.random() * 2.5,
+      vr: (Math.random() - 0.5) * 0.12,
+      alpha: 1
+    }));
+
+    const START = performance.now();
+    const DURATION = 3200; // ms total; fades in last 800ms
+
+    function draw(now) {
+      const elapsed = now - START;
+      if (elapsed > DURATION) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+      const fadeAlpha = elapsed > DURATION - 800 ? 1 - (elapsed - (DURATION - 800)) / 800 : 1;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p => {
+        p.x  += p.vx;
+        p.y  += p.vy;
+        p.rot += p.vr;
+        ctx.save();
+        ctx.globalAlpha = fadeAlpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.colour;
+        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+        ctx.restore();
+      });
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  }
+
   // ── Intro → Survey transition ──────────────────────────
   function startSurvey() {
     document.getElementById('intro-screen').style.display = 'none';
@@ -626,6 +674,8 @@
     renderStep(0);
   }
 </script>
+
+<canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;"></canvas>
 
 </body>
 </html>

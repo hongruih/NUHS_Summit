@@ -22,8 +22,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .tab{font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;padding:11px 20px;border:none;background:0;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s}
 .tab:hover{color:var(--t1);background:var(--c2)}.tab.on{color:var(--cy);border-bottom-color:var(--cy)}
 .tab.ov{color:var(--am)}.tab.ov.on{color:var(--am);border-bottom-color:var(--am)}
-.tab.tt{color:var(--pk)}.tab.tt.on{color:var(--pk);border-bottom-color:var(--pk)}
-.tab.dt{margin-left:auto}
+.tab.tt{color:var(--pk);margin-left:auto}.tab.tt.on{color:var(--pk);border-bottom-color:var(--pk)}
+.tab.dt{color:var(--cy)}.tab.dt.on{color:var(--cy);border-bottom-color:var(--cy)}
 
 .pnl{display:none}.pnl.on{display:block}
 
@@ -252,8 +252,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 <button class="tab" onclick="go('q0')">Q1 — Input</button>
 <button class="tab" onclick="go('q1')">Q2 — Input</button>
 <button class="tab" onclick="go('q2')">Q3 — Input</button>
-<button class="tab dt" onclick="go('dash')">Per-Question Dashboard</button>
 <button class="tab tt" onclick="go('turing')">🤖 AI vs Human</button>
+<button class="tab dt" onclick="go('dash')">💬 AI Perspectives</button>
 <button class="tab ac" onclick="go('accept')">📋 AI Acceptance</button>
 </nav>
 
@@ -563,7 +563,7 @@ function go(id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   $('pnl_'+id).classList.add('on');
   let tabs=document.querySelectorAll('.tab');
-  let m={ov:0,q0:1,q1:2,q2:3,dash:4,turing:5,accept:6};
+  let m={ov:0,q0:1,q1:2,q2:3,turing:4,dash:5,accept:6};
   if(m[id]!==undefined)tabs[m[id]].classList.add('on');
   if(id==='ov')loadOv();else if(id==='dash')loadDash();else if(id==='turing')loadTuring();
   else if(id==='accept')loadAccept();

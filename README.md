@@ -88,6 +88,17 @@ cp .env.example .env
 
 > **better-profanity** — included in `requirements.txt` with no extra setup. Automatically initialised at startup; no action needed after `pip install`.
 
+### Deploying on Render
+
+There is no `render.yaml` in this repo — deployment is configured directly in the **Render dashboard**. When creating the web service, set:
+
+| Setting | Value |
+|---|---|
+| **Build command** | `pip install -r requirements.txt && python -m spacy download en_core_web_sm` |
+| **Start command** | `gunicorn app:app --bind 0.0.0.0:$PORT` |
+
+The build command installs all dependencies and downloads the spaCy language model in one step, so no extra manual action is needed on Render. Set `DATABASE_PATH` to your persistent disk mount path (e.g. `/data/booth_data.db`) in the Render environment variables panel.
+
 ---
 
 ## Running the App

@@ -47,6 +47,7 @@ The app serves two audiences simultaneously:
 | Database | SQLite (WAL mode) via `sqlite3` stdlib |
 | Sentiment analysis | TextBlob |
 | Word cloud NLP | spaCy `en_core_web_sm` (lemmatisation + POS filter); falls back to `collections.Counter` if unavailable |
+| Content moderation | `better-profanity` — blocks profane submissions at the API layer and filters word cloud output |
 | QR code generation | `qrcode` + `Pillow` |
 | Excel export | `openpyxl` |
 | Config | `python-dotenv` |
@@ -84,6 +85,8 @@ cp .env.example .env
 > python -m spacy download en_core_web_sm
 > ```
 > The app runs without this (falling back to basic word counting), but the spaCy model is needed for lemmatised, POS-filtered word clouds.
+
+> **better-profanity** — included in `requirements.txt` with no extra setup. Automatically initialised at startup; no action needed after `pip install`.
 
 ---
 
@@ -210,7 +213,7 @@ App/
 
 | Method | Route | Description |
 |---|---|---|
-| `POST` | `/api/submit` | Submit a sentiment response — body: `{text, question_index, participant_id?}` |
+| `POST` | `/api/submit` | Submit a sentiment response — body: `{text, question_index, participant_id?}`; returns `400` if profanity detected |
 | `GET` | `/api/q/<int:q>` | Word cloud + stats + last 15 entries for question index 0–3 |
 | `GET` | `/api/all` | All questions' word clouds + sentiment + Turing snapshot |
 | `POST` | `/api/turing/submit` | Submit a completed Turing test — body: `{job_group, seniority, answers[], tasks[]}` |
@@ -254,7 +257,7 @@ The admin dashboard (`/admin`) has **7 tabs** arranged in two visual groups sepa
 | AI Perspectives | Cyan | `COUNT(*)` from `sentiment_responses` WHERE `question_index = 0` (unique participants who answered at least Q1) |
 | AI Acceptance | Purple | `total_respondents` from `/api/acceptance/stats` |
 
-All metric cards are expandable to full-screen modals for presentation use.
+All metric cards are expandable to full-screen modals for presentation use. The dashboard polls all active data every **10 seconds**.
 
 ---
 
@@ -359,6 +362,12 @@ Response:
 ```
 
 > Note: `polarity` is stored and returned in the API response but is **not displayed** to participants in the survey UI — only the sentiment label is shown.
+
+Error response (profanity detected):
+```json
+HTTP 400
+{ "error": "Inappropriate content" }
+```
 
 ### Submit a Turing test survey
 

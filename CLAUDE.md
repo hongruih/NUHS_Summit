@@ -34,6 +34,8 @@ pip install -r requirements.txt
 > ```
 > The app runs without it (graceful fallback to the original Counter-based word counting), but spaCy is required for lemmatised, POS-filtered word clouds.
 
+> **better-profanity** — included in `requirements.txt`; no extra setup needed. Initialised at startup via `profanity.load_censor_words()`. Screens submissions at `POST /api/submit` and filters word cloud output in `extract_words()`.
+
 Environment variables (copy `.env.example` to `.env` for local dev):
 - `PORT` — port the app listens on (default: `5001`; set automatically by Render/Railway); pass to Gunicorn via `--bind 0.0.0.0:$PORT`
 - `DATABASE_PATH` — path to the SQLite file (default: `booth_data.db`; set to e.g. `/data/booth_data.db` on Render with a persistent disk)
@@ -50,7 +52,7 @@ There is no build step, test suite, or linter configured.
 **Key in-file sections** (separated by banner comments):
 - Lines ~47–128: Configuration — `QUESTIONS` (4 open-ended questions), `STOP_WORDS`, `SCENARIOS` (5 Turing test clinical cases), `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`, `ACCEPTANCE_PART_A`, `ACCEPTANCE_LIKERT` (41 Likert questions across Parts B–F)
 - Lines ~134–299: Database setup (`get_db`, `init_db`) — creates 5 tables: `sentiment_responses`, `turing_responses`, `turing_answers`, `turing_tasks`, `acceptance_responses`; also runs a safe `ALTER TABLE` migration to add `participant_id` to `sentiment_responses`
-- Lines ~301–457: Business logic — `sentiment()` (TextBlob polarity/subjectivity), `extract_words()` (spaCy lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words + profanity filter → top 80 words; falls back to regex Counter if spaCy unavailable), `get_turing_stats()` (full analytics with optional job-group filter)
+- Lines ~301–457: Business logic — `sentiment()` (TextBlob polarity/subjectivity), `extract_words()` (spaCy lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words + `better-profanity` filter → top 80 words; falls back to regex Counter if spaCy unavailable, profanity filter applies in both paths), `get_turing_stats()` (full analytics with optional job-group filter)
 - Lines ~460–887: Flask routes — participant pages, admin, all API endpoints, Excel export
 
 **Templates** (`templates/`):
@@ -73,7 +75,7 @@ There is no build step, test suite, or linter configured.
 | `GET /survey/sentiment` | AI Perspectives sentiment survey |
 | `GET /survey/acceptance` | AI Acceptance Survey |
 | `GET /qr` | Generates PNG QR code pointing to `/survey/turing` |
-| `POST /api/submit` | Submit a sentiment response (JSON: `text`, `question_index`, optional `participant_id`) |
+| `POST /api/submit` | Submit a sentiment response (JSON: `text`, `question_index`, optional `participant_id`); returns 400 `{"error": "Inappropriate content"}` if profanity detected — nothing written to DB |
 | `GET /api/q/<int:q>` | Word cloud + stats for question index 0–3 |
 | `GET /api/all` | Aggregate data for all questions + Turing snapshot |
 | `POST /api/turing/submit` | Submit a completed Turing test survey |
@@ -90,7 +92,7 @@ There is no build step, test suite, or linter configured.
 The admin nav bar has **7 tabs** split into two visual groups (separated by `margin-left:auto` on `.tab.tt`):
 
 **Left group:**
-1. **Live Overview** (📊) — aggregate word cloud + sentiment + Turing snapshot; auto-refreshes every 3 s
+1. **Live Overview** (📊) — aggregate word cloud + sentiment + Turing snapshot; auto-refreshes every 10 s
 2. **Q1 Input** — record/type Q1 responses; per-question word cloud and sentiment
 3. **Q2 Input** — same for Q2
 4. **Q3 Input** — same for Q3
@@ -147,3 +149,4 @@ All planned refactor steps are done. Post-refactor additions:
 | 28 | Admin tabs: restored right-alignment by moving `margin-left:auto` from `.tab.dt` to `.tab.tt`; colour-coded AI Perspectives tab with `var(--cy)` to match status bar pill | ✅ Done |
 | 29 | Profanity filter (`better-profanity`): blocks submission at `POST /api/submit` (returns 400 if detected); excludes profane lemmas/words from word cloud output in `extract_words()` | ✅ Done |
 | 30 | spaCy-based `extract_words()`: lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words; graceful fallback to Counter if spaCy unavailable | ✅ Done |
+| 31 | Admin dashboard poll interval changed from 3 s to 10 s (`setInterval` in `admin.html`); UI labels updated to match | ✅ Done |

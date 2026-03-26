@@ -31,10 +31,10 @@ The app serves two audiences simultaneously:
 | Survey | Route | Description |
 |---|---|---|
 | AI vs Human | `/survey/turing` | Read 5 clinical scenarios and guess which response was written by AI vs a real doctor; rate trust, empathy, safety, and usefulness |
-| AI Perspectives | `/survey/sentiment` | Answer 4 open-ended questions about AI in healthcare; responses are transcribed (mic or typed) and analysed in real time |
+| AI Perspectives | `/survey/sentiment` | Answer 4 open-ended questions about AI in healthcare; responses are transcribed (mic or typed) and analysed for sentiment in real time |
 | AI Acceptance Survey | `/survey/acceptance` | 13-step structured survey — 8 biographical questions (Part A) followed by 41 Likert-scale statements across 5 thematic parts (B–F) |
 
-**Staff (admin)** access a 6-tab dashboard at `/admin` that shows live word clouds, sentiment distributions, Turing test accuracy analytics, and AI acceptance metrics. All data persists in SQLite and survives server restarts.
+**Staff (admin)** access a 7-tab dashboard at `/admin` that shows live word clouds, sentiment distributions, Turing test accuracy analytics, and AI acceptance metrics. All data persists in SQLite and survives server restarts.
 
 ---
 
@@ -124,17 +124,18 @@ Copy `.env.example` to `.env` for local use. On Render/Railway, set these in the
 
 1. Navigate to `http://<host>/` on any device (phone, tablet, or desktop).
 2. Choose a survey card:
-   - **AI vs Human** — read 5 clinical scenarios, guess which response is AI, and rate each one.
-   - **AI Perspectives** — tap the mic or type answers to 4 open-ended questions; submit each one individually.
-   - **AI Acceptance Survey** — complete a consent/intro screen, then work through 8 biographical questions followed by 41 Likert statements across 5 parts.
+   - **AI vs Human** — read 5 clinical scenarios; guess which response was written by AI; rate the AI response on trust, empathy, safety, and usefulness. If your job group is "Other", an inline text field appears to capture your actual role.
+   - **AI Perspectives** — tap the mic or type answers to 4 open-ended questions; after each submission, a sentiment result (Positive / Neutral / Negative) is shown.
+   - **AI Acceptance Survey** — review the consent/intro screen, then work through 8 biographical questions followed by 41 Likert statements across 5 parts. On completion, a gift message prompts participants to show the screen at the Healthcare Redesign booth.
 3. All surveys are self-paced and fully mobile-responsive.
 
 ### As an Admin (Staff)
 
 1. Navigate to `http://<host>/admin`.
-2. Use the 6 tabs to monitor live responses, view word clouds and sentiment, and analyse Turing test results by job group or seniority.
-3. Use the **Reset** button (Live Overview tab) to wipe all data between sessions.
-4. Download a full `.xlsx` export from the **Export** button (3-sheet workbook).
+2. The header status bar shows live counts: **Total | AI vs Human | AI Perspectives | AI Acceptance**.
+3. Use the 7 tabs to monitor live responses, view word clouds, analyse Turing test results, and review acceptance survey distributions.
+4. Use the **Reset** button (bottom toolbar) to wipe all data between sessions.
+5. Download a full `.xlsx` export from the **Export Excel** button (3-sheet workbook).
 
 ### QR Code
 
@@ -150,23 +151,23 @@ Print or display this at the booth so attendees can scan and go straight to the 
 
 ```
 App/
-├── app.py                    # All routes, business logic, and configuration (~887 lines)
-├── requirements.txt          # Python dependencies
-├── .env.example              # Environment variable template
-├── booth_data.db             # SQLite database (auto-created; not committed)
+├── app.py                     # All routes, business logic, and configuration (~887 lines)
+├── requirements.txt           # Python dependencies
+├── .env.example               # Environment variable template
+├── booth_data.db              # SQLite database (auto-created; not committed)
 │
 ├── templates/
-│   ├── landing.html          # Participant landing page — 3 survey cards at /
-│   ├── admin.html            # 6-tab staff dashboard at /admin
-│   ├── survey_turing.html    # AI vs Human Turing test survey at /survey/turing
-│   ├── survey_sentiment.html # AI Perspectives sentiment survey at /survey/sentiment
-│   └── survey_acceptance.html# AI Acceptance Survey at /survey/acceptance
+│   ├── landing.html           # Participant landing page — 3 survey cards at /
+│   ├── admin.html             # 7-tab staff dashboard at /admin
+│   ├── survey_turing.html     # AI vs Human Turing test survey at /survey/turing
+│   ├── survey_sentiment.html  # AI Perspectives sentiment survey at /survey/sentiment
+│   └── survey_acceptance.html # AI Acceptance Survey at /survey/acceptance
 │
 ├── static/
-│   ├── HCRD.png              # Organisation logo (displayed in all page headers)
-│   └── HCRD2.png             # Alternate logo asset
+│   ├── HCRD.png               # Organisation logo (displayed in all page headers)
+│   └── HCRD2.png              # Alternate logo asset
 │
-└── venv/                     # Virtual environment (not committed)
+└── venv/                      # Virtual environment (not committed)
 ```
 
 ### Key sections inside `app.py`
@@ -192,7 +193,7 @@ App/
 | Method | Route | Description |
 |---|---|---|
 | `GET` | `/` | Participant landing page — 3 survey cards |
-| `GET` | `/admin` | Staff admin dashboard (6 tabs) |
+| `GET` | `/admin` | Staff admin dashboard (7 tabs) |
 | `GET` | `/survey` | Redirects to `/survey/turing` |
 | `GET` | `/survey/turing` | AI vs Human Turing test survey |
 | `GET` | `/survey/sentiment` | AI Perspectives sentiment survey |
@@ -206,7 +207,7 @@ App/
 | `POST` | `/api/submit` | Submit a sentiment response — body: `{text, question_index, participant_id?}` |
 | `GET` | `/api/q/<int:q>` | Word cloud + stats + last 15 entries for question index 0–3 |
 | `GET` | `/api/all` | All questions' word clouds + sentiment + Turing snapshot |
-| `POST` | `/api/turing/submit` | Submit a completed Turing test — body: `{respondent_id?, job_group, seniority, answers[], tasks[]}` |
+| `POST` | `/api/turing/submit` | Submit a completed Turing test — body: `{job_group, seniority, answers[], tasks[]}` |
 | `GET` | `/api/turing/stats` | Full Turing test analytics; optional `?job_group=` filter |
 | `GET` | `/api/turing/scenarios` | Scenarios without AI labels — used by the survey frontend |
 | `POST` | `/api/acceptance/submit` | Submit AI Acceptance Survey — body: `{part_a: {...}, likert_answers: {B1: 3, ...}}` |
@@ -219,18 +220,35 @@ App/
 
 ## Admin Dashboard
 
-The admin dashboard (`/admin`) has 6 tabs:
+The admin dashboard (`/admin`) has **7 tabs** arranged in two visual groups separated by a natural gap:
+
+**Left group:**
 
 | Tab | Contents |
 |---|---|
-| **Live Overview** | Aggregate word cloud across all questions, overall sentiment distribution, Turing test snapshot (total respondents, overall accuracy) |
-| **Q1 Input** | Microphone / text input for Question 1; per-question word cloud and sentiment |
-| **Q2 Input** | Same as Q1 for Question 2 |
-| **Q3 Input** | Same as Q1 for Question 3 |
-| **Per-Q Dashboard** | All 3 questions' word clouds and sentiment distributions side-by-side |
-| **AI vs Human** | Live Turing test results: overall accuracy, accuracy by job group and seniority, per-scenario breakdown, average trust/empathy/safety/usefulness ratings, trusted AI tasks chart; filterable by job group |
+| **📊 Live Overview** | Aggregate word cloud (all questions), overall sentiment distribution, Turing test snapshot (total respondents, overall accuracy, fooled %), per-question sentiment summary |
+| **Q1 Input** | Microphone / text input to record Q1 responses; live word cloud and sentiment panel |
+| **Q2 Input** | Same as Q1 Input for Question 2 |
+| **Q3 Input** | Same as Q1 Input for Question 3 |
 
-All metric cards are expandable/modal for full-screen viewing during presentations.
+**Right group (right-aligned):**
+
+| Tab | Contents |
+|---|---|
+| **🤖 AI vs Human** | Live Turing test results: hero stats (total respondents, overall accuracy, fooled %), accuracy bars by job group and seniority, per-scenario breakdown, average trust/empathy/safety/usefulness ratings, trusted AI tasks chart, recent respondents list; filterable by job group |
+| **💬 AI Perspectives** | All 3 questions' word clouds and sentiment distributions shown side-by-side |
+| **📋 AI Acceptance** | Part A demographic distributions (age, gender, disciplines, seniority, AI usage frequency, AI tools); Parts B–F Likert question averages with response counts |
+
+**Status bar** (top-right header, 4 pills):
+
+| Pill | Colour | Source |
+|---|---|---|
+| Total responses | Default | Sum of the three counts below |
+| AI vs Human | Pink | `COUNT(*)` from `turing_responses` |
+| AI Perspectives | Cyan | `COUNT(*)` from `sentiment_responses` WHERE `question_index = 0` (unique participants who answered at least Q1) |
+| AI Acceptance | Purple | `total_respondents` from `/api/acceptance/stats` |
+
+All metric cards are expandable to full-screen modals for presentation use.
 
 ---
 
@@ -252,7 +270,7 @@ Stores free-text audience responses with pre-computed sentiment.
 | `emoji` | TEXT | Display emoji |
 | `color` | TEXT | Hex colour for UI |
 | `timestamp` | TEXT | ISO 8601 |
-| `participant_id` | TEXT | Optional; links responses across questions for the same person |
+| `participant_id` | TEXT | Optional; links responses across questions for the same participant |
 
 ### `turing_responses`
 One row per Turing test survey respondent.
@@ -260,7 +278,7 @@ One row per Turing test survey respondent.
 | Column | Type | Notes |
 |---|---|---|
 | `respondent_id` | TEXT | Short UUID (8 chars) |
-| `job_group` | TEXT | Selected from `JOB_GROUPS` |
+| `job_group` | TEXT | Selected from `JOB_GROUPS`; may be `"Other; <custom text>"` if participant typed a role |
 | `seniority` | TEXT | Selected from `SENIORITY_LEVELS` |
 | `timestamp` | TEXT | ISO 8601 |
 
@@ -270,7 +288,7 @@ One row per scenario per respondent.
 | Column | Type | Notes |
 |---|---|---|
 | `respondent_id` | TEXT | FK to `turing_responses` |
-| `scenario_id` | TEXT | e.g. `s1`–`s5` |
+| `scenario_id` | TEXT | `s1`–`s5` |
 | `guessed_ai_index` | INTEGER | 0 or 1 — which response the participant thought was AI |
 | `correct` | INTEGER | 1 if correct, 0 if not |
 | `rating_trust` | INTEGER | 1–5 |
@@ -301,7 +319,7 @@ One row per AI Acceptance Survey respondent.
 | `years_role` | TEXT | Part A |
 | `seniority` | TEXT | Part A |
 | `ai_frequency` | TEXT | Part A |
-| `ai_tools` | TEXT | JSON array of selected tools |
+| `ai_tools` | TEXT | JSON array of selected tool categories |
 | `likert_answers` | TEXT | JSON object e.g. `{"B1": 3, "B2": 4, ..., "F7": 5}` covering all 41 questions |
 
 > The `ai_index` field in `SCENARIOS` (0 or 1) records which response is AI-generated. It is **never** sent to the survey frontend — only used server-side to score answers.
@@ -334,6 +352,8 @@ Response:
 }
 ```
 
+> Note: `polarity` is stored and returned in the API response but is **not displayed** to participants in the survey UI — only the sentiment label is shown.
+
 ### Submit a Turing test survey
 
 ```
@@ -355,6 +375,8 @@ Content-Type: application/json
 ```
 
 Response includes `results[]` with `correct`, `ai_index`, and `explanation` per scenario.
+
+> `job_group` may be `"Other; Facilities Management"` when the participant selected "Other" and typed a custom role.
 
 ### Submit an AI Acceptance Survey
 
@@ -423,8 +445,9 @@ All templates use a Google Material Design-inspired light theme. Do not introduc
 | Tertiary text | `#80868b` | Credits, timestamps |
 | Border | `#dadce0` | Card outlines, dividers |
 | Indigo accent | `#4f46e5` / `#6366f1` | Primary buttons, active states |
-| Purple accent | `#a855f7` / `#9333ea` | Acceptance survey highlights |
-| Pink accent | `#ec4899` / `#db2777` | Landing page gradients |
-| Cyan accent | `#06b6d4` | Admin charts |
+| Purple accent | `#a855f7` / `#9333ea` | AI Acceptance highlights; admin `--pu` |
+| Pink accent | `#ec4899` / `#db2777` | AI vs Human highlights; admin `--pk` |
+| Cyan accent | `#06b6d4` | AI Perspectives highlights; admin `--cy` |
+| Amber accent | `#f59e0b` | Live Overview tab; admin `--am` |
 
-**Logo**: `HCRD.png` from `/static/`. Controlled via inline `height` on the `<img>` tag in each template — do not modify the image file.
+**Logo**: `HCRD.png` from `/static/`. Size is controlled via inline `height` on the `<img>` tag in each template — do not modify the image file itself.

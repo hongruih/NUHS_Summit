@@ -23,6 +23,11 @@ Install dependencies (first time or after reset):
 pip install -r requirements.txt
 ```
 
+> **TextBlob corpora** — on first run TextBlob may need its punkt tokeniser. If you see a corpus error, run:
+> ```bash
+> python -m textblob.download_corpora
+> ```
+
 Environment variables (copy `.env.example` to `.env` for local dev):
 - `PORT` — port the app listens on (default: `5001`; set automatically by Render/Railway); pass to Gunicorn via `--bind 0.0.0.0:$PORT`
 - `DATABASE_PATH` — path to the SQLite file (default: `booth_data.db`; set to e.g. `/data/booth_data.db` on Render with a persistent disk)
@@ -44,10 +49,10 @@ There is no build step, test suite, or linter configured.
 
 **Templates** (`templates/`):
 - `landing.html` — participant landing page; 3 survey cards in order: AI vs Human → AI Perspectives → AI Acceptance Survey; clicking "AI Perspectives" opens an instruction modal before navigating; mobile-scroll-safe (no `overflow:hidden` on body, `justify-content:flex-start` on small screens with safe-area bottom padding)
-- `admin.html` — main 6-tab admin dashboard (rendered at `/admin`)
-- `survey_turing.html` — mobile Turing test survey (rendered at `/survey/turing`)
-- `survey_sentiment.html` — sentiment survey with microphone + text input (rendered at `/survey/sentiment`)
-- `survey_acceptance.html` — AI acceptance survey (rendered at `/survey/acceptance`); first screen is a consent/intro step (anonymous notice + ARCHIVE research consent); clicking "Begin Survey" proceeds to the 13-step question flow (8 Part A biographical + 5 Likert parts B–F)
+- `admin.html` — 7-tab admin dashboard (rendered at `/admin`); status bar at top shows Total / AI vs Human / AI Perspectives / AI Acceptance counts; tabs split into left group (Live Overview, Q1–Q3 Input) and right group (AI vs Human, AI Perspectives, AI Acceptance) separated by `margin-left:auto` on the `.tab.tt` class
+- `survey_turing.html` — mobile Turing test survey (rendered at `/survey/turing`); "Other" job group selection reveals an inline free-text input; combined value saved as `"Other; <custom text>"`
+- `survey_sentiment.html` — sentiment survey with microphone + text input (rendered at `/survey/sentiment`); polarity score is calculated and stored but **not displayed** to participants — only the sentiment label (Positive/Neutral/Negative) and polarity bar are shown
+- `survey_acceptance.html` — AI acceptance survey (rendered at `/survey/acceptance`); first screen is a consent/intro step (anonymous notice + HCRD research consent); clicking "Begin Survey" proceeds to the 13-step question flow (8 Part A biographical + 5 Likert parts B–F); completion screen shows a gift booth message ("show this page at the Healthcare Redesign booth") with confetti animation
 
 **Design system**: All templates use a Google-inspired light theme — white (`#ffffff`) / light grey (`#f1f3f4`) backgrounds, `#202124` primary text, `#5f6368` secondary text, `#dadce0` borders. Accent colours (indigo `#4f46e5`/`#6366f1`, pink `#ec4899`, purple `#a855f7`, cyan `#06b6d4`) are used for buttons, highlights, and gradients. Do not introduce dark backgrounds or light-on-dark text.
 
@@ -56,38 +61,49 @@ There is no build step, test suite, or linter configured.
 | Route | Purpose |
 |---|---|
 | `GET /` | Participant landing page — 3 survey cards |
-| `GET /admin` | Main 6-tab dashboard (staff-facing) |
+| `GET /admin` | Main 7-tab dashboard (staff-facing) |
 | `GET /survey` | Redirects to `/survey/turing` |
 | `GET /survey/turing` | Mobile-friendly Turing test survey (attendee-facing, QR-accessible) |
-| `GET /survey/sentiment` | Sentiment survey |
+| `GET /survey/sentiment` | AI Perspectives sentiment survey |
 | `GET /survey/acceptance` | AI Acceptance Survey |
 | `GET /qr` | Generates PNG QR code pointing to `/survey/turing` |
-| `POST /api/submit` | Submit a sentiment response (JSON: `text`, `question_index`) |
-| `GET /api/q/<int:q>` | Word cloud + stats for question index 0–2 |
+| `POST /api/submit` | Submit a sentiment response (JSON: `text`, `question_index`, optional `participant_id`) |
+| `GET /api/q/<int:q>` | Word cloud + stats for question index 0–3 |
 | `GET /api/all` | Aggregate data for all questions + Turing snapshot |
 | `POST /api/turing/submit` | Submit a completed Turing test survey |
-| `GET /api/turing/stats` | Full Turing test analytics |
+| `GET /api/turing/stats` | Full Turing test analytics (optional `?job_group=` filter) |
 | `GET /api/turing/scenarios` | Scenarios without AI labels (used by survey form) |
 | `POST /api/acceptance/submit` | Submit AI Acceptance Survey (JSON: Part A fields + `likert_answers`) |
 | `GET /api/acceptance/stats` | AI Acceptance Survey analytics (Part A distributions + Likert averages) |
 | `POST /api/reset` | Wipe all data from all tables (incl. acceptance_responses) |
 | `GET /api/export` | Export all data as JSON (incl. acceptance stats) |
+| `GET /api/export/excel` | Download 3-sheet `.xlsx` export |
 
 ## Admin Dashboard Tabs (current)
 
-1. **Live Overview** — aggregate word cloud + sentiment + Turing snapshot
-2–4. **Q1/Q2/Q3 Input** — record/type responses per question, per-question dashboard
-5. **Per-Q Dashboard** — all 3 questions' word clouds and sentiments side-by-side
-6. **AI vs Human** — Turing test survey UI + live results dashboard
+The admin nav bar has **7 tabs** split into two visual groups (separated by `margin-left:auto` on `.tab.tt`):
+
+**Left group:**
+1. **Live Overview** (📊) — aggregate word cloud + sentiment + Turing snapshot; auto-refreshes every 3 s
+2. **Q1 Input** — record/type Q1 responses; per-question word cloud and sentiment
+3. **Q2 Input** — same for Q2
+4. **Q3 Input** — same for Q3
+
+**Right group (right-aligned):**
+5. **AI vs Human** (🤖, pink) — Turing test live results: accuracy by job group/seniority/scenario, ratings, task trust chart; filterable by job group
+6. **AI Perspectives** (💬, cyan) — all 3 questions' word clouds and sentiments side-by-side
+7. **AI Acceptance** (📋, purple) — Part A demographic distributions + Parts B–F Likert averages
+
+**Status bar** (top-right of header): four pills in order — Total responses | AI vs Human count | AI Perspectives count | AI Acceptance count. Counts sourced from: AI vs Human = `turing_responses` row count; AI Perspectives = `sentiment_responses` rows for `question_index=0` (i.e. unique participants who answered at least Q1); AI Acceptance = `/api/acceptance/stats` `total_respondents`. Total = sum of all three.
 
 ## Data Model Notes
 
-- `sentiment_responses`: stores free-text audience responses with pre-computed TextBlob polarity/subjectivity/label
-- `turing_responses`: one row per survey respondent (UUID, job group, seniority)
+- `sentiment_responses`: stores free-text audience responses with pre-computed TextBlob polarity/subjectivity/label; `participant_id` column added via safe `ALTER TABLE` migration
+- `turing_responses`: one row per survey respondent (UUID, job group, seniority); `job_group` may be `"Other; <custom text>"` when participant selected "Other" and typed a description
 - `turing_answers`: one row per scenario per respondent (guess, correctness, 4 ratings 1–5)
-- `turing_tasks`: which AI tasks each respondent trusts (multi-select)
+- `turing_tasks`: which AI tasks each respondent trusts (multi-select; one row per task)
 - `acceptance_responses`: one row per respondent — Part A fields as individual columns; `disciplines` and `ai_tools` stored as JSON arrays; `likert_answers` stored as JSON object `{"B1": 3, ..., "F7": 5}` covering all 41 questions across Parts B–F
-- The `ai_index` field in `SCENARIOS` (0 or 1) indicates which response is AI-generated; this is never exposed to the survey frontend
+- The `ai_index` field in `SCENARIOS` (0 or 1) indicates which response is AI-generated; this is **never** exposed to the survey frontend
 
 ## Completed Work
 
@@ -116,3 +132,10 @@ All planned refactor steps are done. Post-refactor additions:
 | 19 | Landing page: survey card order changed to AI vs Human → AI Perspectives → AI Acceptance Survey | ✅ Done |
 | 20 | Landing page: mobile scroll fix — removed `overflow:hidden`, added mobile media query with `justify-content:flex-start` and safe-area bottom padding | ✅ Done |
 | 21 | Logo size tuned across all 5 templates (inline `height` on `<img>` only) | ✅ Done |
+| 22 | Turing test: "Other" job group shows inline free-text input; saves as `"Other; <text>"` | ✅ Done |
+| 23 | AI Perspectives survey: polarity score removed from participant-facing result pop-up (still calculated and stored) | ✅ Done |
+| 24 | AI Acceptance completion screen: gift booth message + confetti animation (canvas-based, 60 particles, 3.2 s fade) | ✅ Done |
+| 25 | Admin status bar: fixed acceptance count (was always 0); replaced "Ready" pill with AI Perspectives count; fixed total to sum all 3 surveys; reordered pills to Total → Turing → Perspectives → Acceptance | ✅ Done |
+| 26 | Admin status bar: AI Perspectives count fixed to use `d['0'].stats.total` (Q1 response count = unique participants) instead of aggregate row sum | ✅ Done |
+| 27 | Admin tabs: renamed "Per-Question Dashboard" → "💬 AI Perspectives"; reordered right group to AI vs Human → AI Perspectives → AI Acceptance | ✅ Done |
+| 28 | Admin tabs: restored right-alignment by moving `margin-left:auto` from `.tab.dt` to `.tab.tt`; colour-coded AI Perspectives tab with `var(--cy)` to match status bar pill | ✅ Done |

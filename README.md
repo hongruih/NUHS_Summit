@@ -46,7 +46,7 @@ The app serves two audiences simultaneously:
 | Production server | Gunicorn |
 | Database | SQLite (WAL mode) via `sqlite3` stdlib |
 | Sentiment analysis | TextBlob |
-| Word frequency | Python `collections.Counter` |
+| Word cloud NLP | spaCy `en_core_web_sm` (lemmatisation + POS filter); falls back to `collections.Counter` if unavailable |
 | QR code generation | `qrcode` + `Pillow` |
 | Excel export | `openpyxl` |
 | Config | `python-dotenv` |
@@ -78,6 +78,12 @@ cp .env.example .env
 > ```bash
 > python -m textblob.download_corpora
 > ```
+
+> **spaCy model** — `pip install -r requirements.txt` installs the spaCy library but **not** the language model. Download it separately after install:
+> ```bash
+> python -m spacy download en_core_web_sm
+> ```
+> The app runs without this (falling back to basic word counting), but the spaCy model is needed for lemmatised, POS-filtered word clouds.
 
 ---
 

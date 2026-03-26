@@ -46,6 +46,16 @@ from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_file, Response, redirect, url_for
 from textblob import TextBlob
 
+# spaCy — optional but recommended for lemmatised word clouds
+# Install: pip install spacy && python -m spacy download en_core_web_sm
+try:
+    import spacy
+    _nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
+    _SPACY_OK = True
+except Exception:
+    _nlp = None
+    _SPACY_OK = False
+
 APP_TITLE = "AI Perspectives — Live Sentiment Booth"
 QUESTIONS = [
     "What changes, if any, do you anticipate AI bringing to your work?",
@@ -318,9 +328,42 @@ def sentiment(text):
                 "label": "Neutral", "emoji": "😐", "color": "#f59e0b"}
 
 def extract_words(texts):
-    combined = re.sub(r"[^a-zA-Z\s]", "", " ".join(texts).lower())
-    words = [w for w in combined.split() if w not in STOP_WORDS and len(w) > 2]
-    freq = Counter(words)
+    """
+    Return [{text, value}] sorted by frequency, capped at 80 words.
+
+    When spaCy is available (en_core_web_sm):
+      - Lemmatises tokens  (concerns/concerned/concerning → concern)
+      - Keeps only NOUN, VERB, ADJ tokens
+      - Removes stop words via spaCy's built-in list merged with STOP_WORDS
+    Falls back to the original Counter approach if spaCy is unavailable.
+
+    Install spaCy:
+        pip install spacy
+        python -m spacy download en_core_web_sm
+    Add 'spacy' to requirements.txt after installing.
+    """
+    combined = " ".join(texts)
+
+    if _SPACY_OK:
+        # Merge the project's curated stop words into spaCy's set so nothing is lost
+        spacy_stops = _nlp.Defaults.stop_words | STOP_WORDS
+
+        doc = _nlp(combined)
+        lemmas = [
+            token.lemma_.lower()
+            for token in doc
+            if token.pos_ in {"NOUN", "VERB", "ADJ"}
+            and token.is_alpha
+            and len(token.lemma_) > 2
+            and token.lemma_.lower() not in spacy_stops
+        ]
+        freq = Counter(lemmas)
+    else:
+        # Original fallback: regex strip → split → filter stop words
+        cleaned = re.sub(r"[^a-zA-Z\s]", "", combined.lower())
+        words = [w for w in cleaned.split() if w not in STOP_WORDS and len(w) > 2]
+        freq = Counter(words)
+
     return [{"text": w, "value": c} for w, c in freq.most_common(80)]
 
 def get_entries(q):

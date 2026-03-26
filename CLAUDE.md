@@ -28,6 +28,12 @@ pip install -r requirements.txt
 > python -m textblob.download_corpora
 > ```
 
+> **spaCy model** — `pip install -r requirements.txt` installs the spaCy library but **not** the language model, which must be downloaded separately:
+> ```bash
+> python -m spacy download en_core_web_sm
+> ```
+> The app runs without it (graceful fallback to the original Counter-based word counting), but spaCy is required for lemmatised, POS-filtered word clouds.
+
 Environment variables (copy `.env.example` to `.env` for local dev):
 - `PORT` — port the app listens on (default: `5001`; set automatically by Render/Railway); pass to Gunicorn via `--bind 0.0.0.0:$PORT`
 - `DATABASE_PATH` — path to the SQLite file (default: `booth_data.db`; set to e.g. `/data/booth_data.db` on Render with a persistent disk)
@@ -44,7 +50,7 @@ There is no build step, test suite, or linter configured.
 **Key in-file sections** (separated by banner comments):
 - Lines ~47–128: Configuration — `QUESTIONS` (4 open-ended questions), `STOP_WORDS`, `SCENARIOS` (5 Turing test clinical cases), `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`, `ACCEPTANCE_PART_A`, `ACCEPTANCE_LIKERT` (41 Likert questions across Parts B–F)
 - Lines ~134–299: Database setup (`get_db`, `init_db`) — creates 5 tables: `sentiment_responses`, `turing_responses`, `turing_answers`, `turing_tasks`, `acceptance_responses`; also runs a safe `ALTER TABLE` migration to add `participant_id` to `sentiment_responses`
-- Lines ~301–457: Business logic — `sentiment()` (TextBlob polarity/subjectivity), `extract_words()` (word frequency, top 80 words, stop-word filtered), `get_turing_stats()` (full analytics with optional job-group filter)
+- Lines ~301–457: Business logic — `sentiment()` (TextBlob polarity/subjectivity), `extract_words()` (spaCy lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words → top 80 words; falls back to regex Counter if spaCy unavailable), `get_turing_stats()` (full analytics with optional job-group filter)
 - Lines ~460–887: Flask routes — participant pages, admin, all API endpoints, Excel export
 
 **Templates** (`templates/`):

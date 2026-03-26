@@ -245,7 +245,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 <div style="display:flex;align-items:center;gap:10px">
   <img src="/static/HCRD.png" height="45" style="flex-shrink:0;width:auto;">
   <h1>{{ title }}</h1>
-</div><div class="pills"><span class="pill" id="totPill">0 responses</span><span class="pill" id="ttPill" style="border-color:var(--pk);color:var(--pk)">0 turing</span><span class="pill" id="acPill" style="border-color:var(--pu);color:var(--pu)">0 acceptance</span><span class="pill on" id="stPill">● Ready</span></div></header>
+</div><div class="pills"><span class="pill" id="totPill">0 responses</span><span class="pill" id="ttPill" style="border-color:var(--pk);color:var(--pk)">0 turing</span><span class="pill" id="spPill" style="border-color:var(--cy);color:var(--cy)">0 perspectives</span><span class="pill" id="acPill" style="border-color:var(--pu);color:var(--pu)">0 acceptance</span></div></header>
 
 <nav class="tabs">
 <button class="tab ov on" onclick="go('ov')">📊 Live Overview</button>
@@ -526,7 +526,7 @@ function stopSpeech(q){
 // CORE HELPERS
 // ════════════════════════════════════════════════════════
 function $(id){return document.getElementById(id)}
-function setS(t,c){let p=$('stPill');p.textContent='● '+t;p.style.borderColor=c;p.style.color=c}
+function setS(t,c){let p=$('stPill');if(!p)return;p.textContent='● '+t;p.style.borderColor=c;p.style.color=c}
 
 // ════════════════════════════════════════════════════════
 // RESPONDENT ID
@@ -715,9 +715,15 @@ async function loadTuring(){
 
 
 async function updTot(){
-  try{let d=await(await fetch('/api/all')).json(),t=d.agg.stats.total,tt=d.turing.total_respondents,ta=d.acceptance_survey?d.acceptance_survey.total_respondents:0;
-    $('totPill').textContent=t+' responses';$('ttPill').textContent=tt+' turing';$('acPill').textContent=ta+' acceptance';
-    $('totC').textContent=`Total: ${t} responses · ${tt} turing · ${ta} acceptance`;
+  try{
+    let [d,da]=await Promise.all([fetch('/api/all').then(r=>r.json()),fetch('/api/acceptance/stats').then(r=>r.json())]);
+    let tt=d.turing.total_respondents,sp=d['0'].stats.total,ta=da.total_respondents||0;
+    let tot=tt+sp+ta;
+    $('totPill').textContent=tot+' responses';
+    $('ttPill').textContent=tt+' turing';
+    $('spPill').textContent=sp+' perspectives';
+    $('acPill').textContent=ta+' acceptance';
+    $('totC').textContent=`Total: ${tot} responses · ${tt} turing · ${sp} perspectives · ${ta} acceptance`;
   }catch(e){}
 }
 

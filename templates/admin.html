@@ -259,7 +259,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 
 <!-- ══════ OVERVIEW ══════ -->
 <div class="pnl on" id="pnl_ov"><div class="ov-wrap">
-<div class="ov-title"><b>Live Overview</b> — All responses · <span style="font-size:.7rem;color:var(--t3)">Auto-refreshes every 3s</span></div>
+<div class="ov-title"><b>Live Overview</b> — All responses · <span style="font-size:.7rem;color:var(--t3)">Auto-refreshes every 10s</span></div>
 
 <!-- 3 per-question word clouds -->
 <div class="ov-wc-row">
@@ -327,7 +327,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 
 <!-- ══════ TURING TEST DASHBOARD ══════ -->
 <div class="pnl" id="pnl_turing"><div class="tt-wrap">
-<div class="ov-title"><b style="color:var(--pk)">🤖 AI vs Human</b> — Can clinicians tell the difference? · <span style="font-size:.7rem;color:var(--t3)">Auto-refreshes every 3s</span></div>
+<div class="ov-title"><b style="color:var(--pk)">🤖 AI vs Human</b> — Can clinicians tell the difference? · <span style="font-size:.7rem;color:var(--t3)">Auto-refreshes every 10s</span></div>
 
 <!-- Job group filter -->
 <div class="tt-filter">
@@ -382,7 +382,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 
 <!-- ══════ AI ACCEPTANCE DASHBOARD ══════ -->
 <div class="pnl" id="pnl_accept"><div class="ac-wrap">
-<div class="ov-title"><b style="color:var(--pu)">📋 AI Acceptance Survey</b> — Respondent metrics · <span style="font-size:.7rem;color:var(--t3)">Auto-refreshes every 3s</span></div>
+<div class="ov-title"><b style="color:var(--pu)">📋 AI Acceptance Survey</b> — Respondent metrics · <span style="font-size:.7rem;color:var(--t3)">Auto-refreshes every 10s</span></div>
 <div class="tt-hero" style="margin-bottom:20px">
   <div class="tt-big" style="border-color:rgba(168,85,247,.2)"><span class="n" style="color:var(--pu)" id="acTot">0</span><span class="l">Total Respondents</span></div>
 </div>
@@ -783,7 +783,7 @@ setInterval(()=>{
   else if(currentPanel==='accept')loadAccept();
   else if(currentPanel.startsWith('q'))loadQ(+currentPanel.replace('q',''));
   updTot();
-},3000);
+},10000);
 
 if(!HAS_SPEECH){for(let i=0;i<QN;i++)$(`noSp_${i}`).classList.add('vis')}
 for(let q=0;q<QN;q++){$(`tx_${q}`).addEventListener('input',()=>updateLivePreview(q))}

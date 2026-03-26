@@ -33,6 +33,7 @@ pip install -r requirements.txt
 > python -m spacy download en_core_web_sm
 > ```
 > The app runs without it (graceful fallback to the original Counter-based word counting), but spaCy is required for lemmatised, POS-filtered word clouds.
+> **On Render**: `en_core_web_sm` is downloaded automatically during the build step via `render.yaml` (`buildCommand: pip install -r requirements.txt && python -m spacy download en_core_web_sm`). No manual step needed for Render deployments.
 
 > **better-profanity** — included in `requirements.txt`; no extra setup needed. Initialised at startup via `profanity.load_censor_words()`. Screens submissions at `POST /api/submit` and filters word cloud output in `extract_words()`.
 
@@ -41,7 +42,7 @@ Environment variables (copy `.env.example` to `.env` for local dev):
 - `DATABASE_PATH` — path to the SQLite file (default: `booth_data.db`; set to e.g. `/data/booth_data.db` on Render with a persistent disk)
 - `FLASK_DEBUG` — set to `true` for local development only (has no effect under Gunicorn)
 
-There is no build step, test suite, or linter configured.
+**Render deployment**: Configured via `render.yaml` at the project root. Build and start commands are defined there — do not manage them manually in the Render dashboard.
 
 ## Architecture
 

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: nuhs-summit-app
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python -m spacy download en_core_web_sm
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DATABASE_PATH
+        value: /data/booth_data.db
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1

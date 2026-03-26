@@ -367,7 +367,7 @@
       <div class="sentiment-display">
         <div class="sentiment-emoji" id="result-emoji"></div>
         <div class="sentiment-label-text" id="result-label"></div>
-        <div class="sentiment-polarity" id="result-polarity"></div>
+
       </div>
 
       <div class="bar-track">
@@ -568,7 +568,6 @@
     document.getElementById('result-emoji').textContent = s.emoji;
     document.getElementById('result-label').textContent = s.label;
     document.getElementById('result-label').style.color = s.color;
-    document.getElementById('result-polarity').textContent = 'Polarity: ' + s.polarity;
 
     // Bar: maps polarity -1..+1 → 0..100%
     const pct = ((s.polarity + 1) / 2 * 100).toFixed(1);

@@ -566,7 +566,13 @@
 
     // Emoji + label
     document.getElementById('result-emoji').textContent = s.emoji;
-    document.getElementById('result-label').textContent = s.label;
+    const p = s.polarity;
+    const displayLabel = p > 0.5  ? "That's great to hear 🚀"
+                       : p > 0.15 ? "Sounds like you're cautiously optimistic! 😊"
+                       : p >= -0.15 ? "A thoughtful, balanced perspective 🤔"
+                       : p >= -0.5  ? "You've got some real concerns worth exploring 😐"
+                       :              "You're not alone — this sparks strong feelings 💪";
+    document.getElementById('result-label').textContent = displayLabel;
     document.getElementById('result-label').style.color = s.color;
 
     // Bar: maps polarity -1..+1 → 0..100%

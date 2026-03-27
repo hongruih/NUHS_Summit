@@ -44,7 +44,17 @@ load_dotenv()
 from collections import Counter
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_file, Response, redirect, url_for
-from textblob import TextBlob
+from transformers import pipeline as hf_pipeline
+_sentiment_pipeline = None
+def get_sentiment_pipeline():
+    global _sentiment_pipeline
+    if _sentiment_pipeline is None:
+        _sentiment_pipeline = hf_pipeline(
+            "sentiment-analysis",
+            model="distilbert-base-uncased-finetuned-sst-2-english",
+            device=-1  # force CPU
+        )
+    return _sentiment_pipeline
 
 # spaCy — optional but recommended for lemmatised word clouds
 # Install: pip install spacy && python -m spacy download en_core_web_sm
@@ -319,17 +329,18 @@ app = Flask(__name__)
 # SENTIMENT HELPERS (unchanged logic, now with SQLite)
 # ═══════════════════════════════════════════════════════
 def sentiment(text):
-    b = TextBlob(text)
-    p = b.sentiment.polarity
-    s = b.sentiment.subjectivity
+    result = get_sentiment_pipeline()(text[:512])[0]
+    raw_label = result["label"]   # "POSITIVE" or "NEGATIVE"
+    score = result["score"]       # confidence 0–1
+    p = score if raw_label == "POSITIVE" else -score
     if p > 0.15:
-        return {"polarity": round(p, 3), "subjectivity": round(s, 3),
+        return {"polarity": round(p, 3), "subjectivity": 0.0,
                 "label": "Positive", "emoji": "😊", "color": "#22c55e"}
     elif p < -0.15:
-        return {"polarity": round(p, 3), "subjectivity": round(s, 3),
+        return {"polarity": round(p, 3), "subjectivity": 0.0,
                 "label": "Negative", "emoji": "😟", "color": "#ef4444"}
     else:
-        return {"polarity": round(p, 3), "subjectivity": round(s, 3),
+        return {"polarity": round(p, 3), "subjectivity": 0.0,
                 "label": "Neutral", "emoji": "😐", "color": "#f59e0b"}
 
 def extract_words(texts):

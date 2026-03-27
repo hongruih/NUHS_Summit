@@ -146,7 +146,7 @@ Copy `.env.example` to `.env` for local use. On Render/Railway, set these in the
 2. Choose a survey card:
    - **AI vs Human** — read 5 clinical scenarios; guess which response was written by AI; rate the AI response on trust, empathy, safety, and usefulness. If your job group is "Other", an inline text field appears to capture your actual role.
    - **AI Perspectives** — tap the mic or type answers to 4 open-ended questions; after each submission, a sentiment result (Positive / Neutral / Negative) is shown.
-   - **AI Acceptance Survey** — review the consent/intro screen, then work through 8 biographical questions followed by 41 Likert statements across 5 parts. On completion, a gift message prompts participants to show the screen at the Healthcare Redesign booth.
+   - **AI Acceptance Survey** — review the consent/intro screen, then work through 8 biographical questions followed by 41 Likert statements across 5 parts. The discipline question (Q3) is single-select; choosing "Other" reveals an inline text field to specify a role. On completion, a gift message prompts participants to show the screen at the Healthcare Redesign booth.
 3. All surveys are self-paced and fully mobile-responsive.
 
 ### As an Admin (Staff)
@@ -334,7 +334,7 @@ One row per AI Acceptance Survey respondent.
 | `timestamp` | TEXT | ISO 8601 |
 | `age_group` | TEXT | Part A |
 | `gender` | TEXT | Part A |
-| `disciplines` | TEXT | JSON array e.g. `["Medicine","Nursing"]` |
+| `disciplines` | TEXT | Single-element JSON array e.g. `["Medicine"]` or `["Other; Data Scientist"]` (question is single-select; "Other" stores as `"Other; <role>"`) |
 | `years_healthcare` | TEXT | Part A |
 | `years_role` | TEXT | Part A |
 | `seniority` | TEXT | Part A |

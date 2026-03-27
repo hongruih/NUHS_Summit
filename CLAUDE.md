@@ -62,7 +62,7 @@ Environment variables (copy `.env.example` to `.env` for local dev):
 - `admin.html` — 7-tab admin dashboard (rendered at `/admin`); status bar at top shows Total / AI vs Human / AI Perspectives / AI Acceptance counts; tabs split into left group (Live Overview, Q1–Q3 Input) and right group (AI vs Human, AI Perspectives, AI Acceptance) separated by `margin-left:auto` on the `.tab.tt` class
 - `survey_turing.html` — mobile Turing test survey (rendered at `/survey/turing`); "Other" job group selection reveals an inline free-text input; combined value saved as `"Other; <custom text>"`
 - `survey_sentiment.html` — sentiment survey with microphone + text input (rendered at `/survey/sentiment`); polarity score is calculated and stored but **not displayed** to participants — only the sentiment label (Positive/Neutral/Negative) and polarity bar are shown
-- `survey_acceptance.html` — AI acceptance survey (rendered at `/survey/acceptance`); first screen is a consent/intro step (anonymous notice + HCRD research consent); clicking "Begin Survey" proceeds to the 13-step question flow (8 Part A biographical + 5 Likert parts B–F); completion screen shows a gift booth message ("show this page at the Healthcare Redesign booth") with confetti animation
+- `survey_acceptance.html` — AI acceptance survey (rendered at `/survey/acceptance`); first screen is a consent/intro step (anonymous notice + HCRD research consent); clicking "Begin Survey" proceeds to the 13-step question flow (8 Part A biographical + 5 Likert parts B–F); completion screen shows a gift booth message ("show this page at the Healthcare Redesign booth") with confetti animation; Part A Q3 (discipline) is single-select — selecting "Other" reveals an inline free-text input; stored as `"Other; <role>"` in the `disciplines` JSON array
 
 **Design system**: All templates use a Google-inspired light theme — white (`#ffffff`) / light grey (`#f1f3f4`) backgrounds, `#202124` primary text, `#5f6368` secondary text, `#dadce0` borders. Accent colours (indigo `#4f46e5`/`#6366f1`, pink `#ec4899`, purple `#a855f7`, cyan `#06b6d4`) are used for buttons, highlights, and gradients. Do not introduce dark backgrounds or light-on-dark text.
 
@@ -112,7 +112,7 @@ The admin nav bar has **7 tabs** split into two visual groups (separated by `mar
 - `turing_responses`: one row per survey respondent (UUID, job group, seniority); `job_group` may be `"Other; <custom text>"` when participant selected "Other" and typed a description
 - `turing_answers`: one row per scenario per respondent (guess, correctness, 4 ratings 1–5)
 - `turing_tasks`: which AI tasks each respondent trusts (multi-select; one row per task)
-- `acceptance_responses`: one row per respondent — Part A fields as individual columns; `disciplines` and `ai_tools` stored as JSON arrays; `likert_answers` stored as JSON object `{"B1": 3, ..., "F7": 5}` covering all 41 questions across Parts B–F
+- `acceptance_responses`: one row per respondent — Part A fields as individual columns; `disciplines` stored as a single-element JSON array (discipline question is single-select; "Other" saves as `["Other; <role>"`]); `ai_tools` stored as a JSON array (multi-select); `likert_answers` stored as JSON object `{"B1": 3, ..., "F7": 5}` covering all 41 questions across Parts B–F
 - The `ai_index` field in `SCENARIOS` (0 or 1) indicates which response is AI-generated; this is **never** exposed to the survey frontend
 
 ## Completed Work
@@ -152,3 +152,4 @@ All planned refactor steps are done. Post-refactor additions:
 | 29 | Profanity filter (`better-profanity`): blocks submission at `POST /api/submit` (returns 400 if detected); excludes profane lemmas/words from word cloud output in `extract_words()` | ✅ Done |
 | 30 | spaCy-based `extract_words()`: lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words; graceful fallback to Counter if spaCy unavailable | ✅ Done |
 | 31 | Admin dashboard poll interval changed from 3 s to 10 s (`setInterval` in `admin.html`); UI labels updated to match | ✅ Done |
+| 32 | AI Acceptance Survey Part A Q3 (discipline): changed to single-select; "Other" reveals inline free-text input; stored as `"Other; <role>"` in the `disciplines` JSON array; empty "Other" blocked with validation message | ✅ Done |

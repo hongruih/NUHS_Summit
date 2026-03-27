@@ -380,7 +380,7 @@
   const PART_A_STEPS = [
     { key: "age_group",        label: "How old are you?",                                              multi: false, options: {{ part_a.age_group        | tojson }} },
     { key: "gender",           label: "What is your gender?",                                          multi: false, options: {{ part_a.gender           | tojson }} },
-    { key: "disciplines",      label: "Which discipline(s) best describe your role?",                  multi: true,  options: {{ part_a.disciplines      | tojson }} },
+    { key: "disciplines",      label: "Which discipline best describes your role?",                   multi: false, options: {{ part_a.disciplines      | tojson }} },
     { key: "years_healthcare", label: "How many years have you worked in healthcare?",                  multi: false, options: {{ part_a.years_healthcare | tojson }} },
     { key: "years_role",       label: "How many years have you been in your current role?",             multi: false, options: {{ part_a.years_role       | tojson }} },
     { key: "seniority",        label: "Which best describes your seniority level?",                    multi: false, options: {{ part_a.seniority        | tojson }} },
@@ -448,6 +448,7 @@
   function renderPartA(i) {
     const s = PART_A_STEPS[i];
     const saved = partAAnswers[s.key];
+    const isDisciplines = s.key === 'disciplines';
 
     let html = `
       <div class="step-label">Part A &mdash; About You &nbsp;&middot;&nbsp; Question ${i + 1} of ${PART_A_STEPS.length}</div>
@@ -462,12 +463,38 @@
       const btn = document.createElement('button');
       btn.className = 'opt-btn';
       btn.textContent = opt;
-      const isSel = s.multi
-        ? (Array.isArray(saved) && saved.includes(opt))
-        : (saved === opt);
+
+      let isSel;
+      if (isDisciplines) {
+        isSel = saved === opt || (opt === 'Other' && typeof saved === 'string' && saved.startsWith('Other'));
+      } else {
+        isSel = s.multi
+          ? (Array.isArray(saved) && saved.includes(opt))
+          : (saved === opt);
+      }
       if (isSel) btn.classList.add('selected');
       btn.onclick = () => selectPartA(s.key, opt, s.multi, btn);
       container.appendChild(btn);
+
+      // Disciplines: inject free-text input immediately after the "Other" button
+      if (isDisciplines && opt === 'Other') {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.id = 'disciplines-other-input';
+        inp.placeholder = 'Please specify your role';
+        inp.style.cssText = 'display:none;margin-top:8px;width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #dadce0;border-radius:10px;font-size:0.95rem;color:#202124;outline:none;font-family:inherit;';
+        if (isSel) {
+          inp.style.display = 'block';
+          if (saved && saved.startsWith('Other; ')) inp.value = saved.slice(7);
+        }
+        inp.addEventListener('input', () => {
+          const txt = inp.value.trim();
+          partAAnswers['disciplines'] = txt ? 'Other; ' + txt : 'Other';
+        });
+        inp.addEventListener('focus', () => { inp.style.borderColor = '#a855f7'; });
+        inp.addEventListener('blur',  () => { inp.style.borderColor = '#dadce0'; });
+        container.appendChild(inp);
+      }
     });
   }
 
@@ -486,6 +513,21 @@
       partAAnswers[key] = value;
       document.querySelectorAll('#options-container .opt-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
+    }
+
+    // Disciplines: show/hide the "Other" free-text input
+    if (key === 'disciplines') {
+      const inp = document.getElementById('disciplines-other-input');
+      if (inp) {
+        if (value === 'Other') {
+          inp.style.display = 'block';
+          inp.focus();
+          // partAAnswers.disciplines stays as 'Other' until text is typed
+        } else {
+          inp.style.display = 'none';
+          inp.value = '';
+        }
+      }
     }
   }
 
@@ -543,6 +585,10 @@
     if (i < PART_A_STEPS.length) {
       const s = PART_A_STEPS[i];
       const val = partAAnswers[s.key];
+      if (s.key === 'disciplines') {
+        // "Other" alone means the free-text field was left empty — not valid
+        return !!val && val !== 'Other';
+      }
       return s.multi ? (Array.isArray(val) && val.length > 0) : !!val;
     } else {
       const part = LIKERT_PARTS[i - PART_A_STEPS.length];
@@ -558,7 +604,12 @@
   function goNext() {
     if (!validateStep(step)) {
       if (step < PART_A_STEPS.length) {
-        document.getElementById('error-msg').textContent = 'Please make a selection before continuing.';
+        const s = PART_A_STEPS[step];
+        if (s.key === 'disciplines' && partAAnswers.disciplines === 'Other') {
+          document.getElementById('error-msg').textContent = 'Please specify your role in the text field.';
+        } else {
+          document.getElementById('error-msg').textContent = 'Please make a selection before continuing.';
+        }
       } else {
         document.getElementById('error-msg').textContent = 'Please rate all statements before continuing.';
       }
@@ -584,7 +635,7 @@
       part_a: {
         age_group:        partAAnswers.age_group        || null,
         gender:           partAAnswers.gender           || null,
-        disciplines:      partAAnswers.disciplines      || [],
+        disciplines:      partAAnswers.disciplines ? [partAAnswers.disciplines] : [],
         years_healthcare: partAAnswers.years_healthcare || null,
         years_role:       partAAnswers.years_role       || null,
         seniority:        partAAnswers.seniority        || null,

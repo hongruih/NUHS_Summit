@@ -32,7 +32,7 @@
   Usage:
       python app.py  →  open http://localhost:5001
 
-  Author: Ravi 
+  Authors: Alexander Yip, Ravi Shankar, Elya Chen, Emily Chew & HCRD
 =============================================================================
 """
 

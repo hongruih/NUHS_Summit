@@ -770,7 +770,7 @@ async function loadAccept(){
   }catch(e){console.error('loadAccept error:',e)}
 }
 
-async function rst(){if(!confirm('Reset ALL data (sentiment + survey)?'))return;await fetch('/api/reset',{method:'POST'});for(let q=0;q<QN;q++)loadQ(q);loadOv();loadDash();loadTuring();updTot()}
+async function rst(){if(!confirm('Reset ALL data (sentiment + survey + turing)?'))return;await fetch('/api/reset',{method:'POST'});for(let q=0;q<QN;q++)loadQ(q);loadOv();loadDash();loadTuring();updTot()}
 
 async function exp(){let d=await(await fetch('/api/export')).json();let b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});let u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`sentiment_export_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u)}
 

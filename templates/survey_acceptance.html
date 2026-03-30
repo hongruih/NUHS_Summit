@@ -287,6 +287,35 @@
       font-size: 0.95rem;
     }
 
+    /* ── Part G — Open Reflection textareas ── */
+    .reflection-item {
+      margin-bottom: 20px;
+    }
+    .reflection-item:last-child { margin-bottom: 0; }
+    .reflection-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #202124;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .reflection-input {
+      width: 100%;
+      min-height: 80px;
+      padding: 10px 13px;
+      border: 1.5px solid #dadce0;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      color: #202124;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s;
+      box-sizing: border-box;
+    }
+    .reflection-input:focus { border-color: #a855f7; }
+
     /* ── Mobile: reflow Likert grid ── */
     @media (max-width: 500px) {
       body { padding: 16px 12px 32px; }
@@ -319,7 +348,7 @@
   </div>
   <div class="survey-header">
     <h1>AI Acceptance Survey</h1>
-    <p>NUH AI Summit 2026 &middot; Your responses are anonymous</p>
+    <p>NUHS Summit 2026 &middot; Your responses are anonymous</p>
   </div>
 
   <div class="progress" id="progress" style="display:none"></div>
@@ -370,7 +399,7 @@
       <p style="font-size:0.82rem;color:#5f6368;margin:10px 0 0;">While stocks last.</p>
     </div>
     <a class="btn-back-home" href="/">&#8592; Back to Surveys</a>
-    <p style="margin-top:24px;font-size:.72rem;color:#80868b">NUH AI Summit &middot; 2026</p>
+    <p style="margin-top:24px;font-size:.72rem;color:#80868b">NUH AI Summit &middot; Alexander Yip, Ravi Shankar, Elya Chen, Emily Chew & HCRD</p>
   </div>
 
 </div><!-- /survey-wrap -->
@@ -378,17 +407,83 @@
 <script>
   // ── Data from server ──────────────────────────────────
   const PART_A_STEPS = [
-    { key: "age_group",        label: "How old are you?",                                              multi: false, options: {{ part_a.age_group        | tojson }} },
-    { key: "gender",           label: "What is your gender?",                                          multi: false, options: {{ part_a.gender           | tojson }} },
-    { key: "disciplines",      label: "Which discipline best describes your role?",                   multi: false, options: {{ part_a.disciplines      | tojson }} },
-    { key: "years_healthcare", label: "How many years have you worked in healthcare?",                  multi: false, options: {{ part_a.years_healthcare | tojson }} },
-    { key: "years_role",       label: "How many years have you been in your current role?",             multi: false, options: {{ part_a.years_role       | tojson }} },
-    { key: "seniority",        label: "Which best describes your seniority level?",                    multi: false, options: {{ part_a.seniority        | tojson }} },
-    { key: "ai_frequency",     label: "How often do you use AI tools in your work?",                   multi: false, options: {{ part_a.ai_frequency     | tojson }} },
-    { key: "ai_tools",         label: "Which AI tools have you used? (Select all that apply)",         multi: true,  options: {{ part_a.ai_tools         | tojson }} }
+    { key: "age_group",        label: "How old are you?",
+      multi: false, options: {{ part_a.age_group        | tojson }}, freetext: null },
+    { key: "gender",           label: "What is your gender?",
+      multi: false, options: {{ part_a.gender           | tojson }}, freetext: null },
+    { key: "cluster",          label: "Which healthcare cluster are you from?",
+      multi: false, options: {{ part_a.cluster          | tojson }}, freetext: "Others" },
+    { key: "disciplines",      label: "Which discipline best describes your role?",
+      multi: false, options: {{ part_a.disciplines      | tojson }}, freetext: "Other" },
+    { key: "seniority",        label: "What is your level of seniority / designation?",
+      multi: false, options: null, freetext: null },
+    { key: "years_healthcare", label: "How many years have you worked in healthcare?",
+      multi: false, options: {{ part_a.years_healthcare | tojson }}, freetext: null },
+    { key: "years_role",       label: "How many years have you been in your current role?",
+      multi: false, options: {{ part_a.years_role       | tojson }}, freetext: null },
+    { key: "ai_frequency",     label: "How often do you use AI tools to support your work?",
+      multi: false, options: {{ part_a.ai_frequency     | tojson }}, freetext: null },
+    { key: "ai_tools",         label: "What types of AI tools do you use? (Select all that apply)",
+      multi: true,  options: {{ part_a.ai_tools         | tojson }}, freetext: null }
   ];
 
-  // Build Likert steps from server data: array of {part, title, questions:[{key,text}]}
+  // Seniority options keyed by discipline — populated at render time based on Q4 answer
+  const SENIORITY_BY_DISCIPLINE = {
+    "Medicine": [
+      "Student (Medical Student)",
+      "Junior (House Officer)",
+      "Mid-Level (Medical Officer, Junior Resident)",
+      "Senior (Resident Physician, Associate Consultant, Consultant, Senior Consultant)",
+      "Leadership/Director (Head of Department, Chairman Medical Board)"
+    ],
+    "Nursing": [
+      "Student (Nursing Student)",
+      "Junior (Enrolled Nurse, Staff Nurse)",
+      "Mid-Level (Senior/Principal Enrolled Nurse, Senior Staff Nurse, Assistant Nurse Clinician, Nurse Manager/Clinician/Educator/Researcher/Informaticist)",
+      "Senior (Senior Nurse Manager/Clinician/Educator/Researcher/Informaticist)",
+      "Leadership/Director (Deputy/Assistant Director of Nursing, Chief Nurse/Director of Nursing)"
+    ],
+    "Allied Health Professions": [
+      "Student (AHP Student / Pre-Reg AHP)",
+      "Junior (AHP)",
+      "Mid-Level (Senior AHP)",
+      "Senior (Principal/Senior Principal AHP)",
+      "Leadership/Director (Head/Chief AHP)"
+    ],
+    "Healthcare Research": [
+      "Student (Intern/Student Researcher)",
+      "Junior (Research Assistant)",
+      "Mid-Level (Senior Research Assistant, Research Associate)",
+      "Senior (Research Fellow, Senior Research Fellow)",
+      "Leadership/Director (Assistant/Associate/Professor)"
+    ],
+    "Healthcare Administration / Operations": [
+      "Student (Intern)",
+      "Junior (Executive, Senior Executive)",
+      "Mid-Level (Assistant/Senior Assistant Manager)",
+      "Senior (Senior/Manager)",
+      "Leadership/Director (Assistant Director, Deputy Director, Director, CEO)"
+    ],
+    "Other": [
+      "Student",
+      "Junior",
+      "Mid-Level",
+      "Senior",
+      "Leadership/Director"
+    ]
+  };
+
+  // Word substituted for [discipline] in Likert questions
+  const DISCIPLINE_WORD = {
+    "Medicine":                           "medical",
+    "Nursing":                            "nursing",
+    "Allied Health Professions":          "clinical",
+    "Healthcare Research":                "research",
+    "Healthcare Administration / Operations": "administrative",
+    "Other":                              ""
+  };
+
+  // Build Likert steps from server data
   const LIKERT_PARTS = [
     {% for part_key, part_val in likert.items() %}
     {
@@ -403,12 +498,21 @@
     {% endfor %}
   ];
 
-  const TOTAL_STEPS = PART_A_STEPS.length + LIKERT_PARTS.length; // 13
+  // Part G open-ended questions (all optional)
+  const OPEN_REFLECTION_QUESTIONS = [
+    { key: "G1", label: "If AI were to be introduced in your workplace, which tasks or responsibilities would you like it to assist you with?" },
+    { key: "G2", label: "What is your biggest concern about AI being introduced in your area of work?" },
+    { key: "G3", label: "What would make you more confident or willing to use AI tools in your daily practice?" },
+    { key: "G4", label: "Is there anything else you would like to share about AI in healthcare?" }
+  ];
+
+  const TOTAL_STEPS = PART_A_STEPS.length + LIKERT_PARTS.length + 1; // +1 for Part G
   let step = 0;
 
   // Answers storage
-  const partAAnswers = {};    // key -> string or [string]
-  const likertAnswers = {};   // key -> 1-5  (e.g. "B1" -> 3)
+  const partAAnswers          = {};   // key -> string or [string]
+  const likertAnswers         = {};   // e.g. "B1" -> 3
+  const openReflectionAnswers = {};   // e.g. "G1" -> "free text"
 
   // ── Progress dots ──────────────────────────────────────
   function buildDots() {
@@ -437,18 +541,28 @@
     updateDots(i);
     window.scrollTo(0, 0);
 
+    const partGIdx = PART_A_STEPS.length + LIKERT_PARTS.length;
     if (i < PART_A_STEPS.length) {
       renderPartA(i);
-    } else {
+    } else if (i < partGIdx) {
       renderLikert(i - PART_A_STEPS.length);
+    } else {
+      renderOpenReflection();
     }
+  }
+
+  // ── Resolve seniority options from the saved discipline answer ──
+  function getSeniorityOptions() {
+    const disc = partAAnswers['disciplines'] || '';
+    const key  = disc.startsWith('Other') ? 'Other' : disc;
+    return SENIORITY_BY_DISCIPLINE[key] || SENIORITY_BY_DISCIPLINE['Other'];
   }
 
   // ── Part A rendering ───────────────────────────────────
   function renderPartA(i) {
-    const s = PART_A_STEPS[i];
+    const s    = PART_A_STEPS[i];
+    const opts = (s.key === 'seniority') ? getSeniorityOptions() : s.options;
     const saved = partAAnswers[s.key];
-    const isDisciplines = s.key === 'disciplines';
 
     let html = `
       <div class="step-label">Part A &mdash; About You &nbsp;&middot;&nbsp; Question ${i + 1} of ${PART_A_STEPS.length}</div>
@@ -459,37 +573,38 @@
     document.getElementById('step-card').innerHTML = html;
 
     const container = document.getElementById('options-container');
-    s.options.forEach(opt => {
+    opts.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'opt-btn';
       btn.textContent = opt;
 
       let isSel;
-      if (isDisciplines) {
-        isSel = saved === opt || (opt === 'Other' && typeof saved === 'string' && saved.startsWith('Other'));
+      if (s.freetext && opt === s.freetext) {
+        isSel = typeof saved === 'string' && saved.startsWith(s.freetext);
       } else {
         isSel = s.multi
           ? (Array.isArray(saved) && saved.includes(opt))
           : (saved === opt);
       }
       if (isSel) btn.classList.add('selected');
-      btn.onclick = () => selectPartA(s.key, opt, s.multi, btn);
+      btn.onclick = () => selectPartA(s, opt, btn);
       container.appendChild(btn);
 
-      // Disciplines: inject free-text input immediately after the "Other" button
-      if (isDisciplines && opt === 'Other') {
+      // Inject free-text input after the freetext-triggering option
+      if (s.freetext && opt === s.freetext) {
         const inp = document.createElement('input');
         inp.type = 'text';
-        inp.id = 'disciplines-other-input';
-        inp.placeholder = 'Please specify your role';
+        inp.id = s.key + '-freetext-input';
+        inp.placeholder = 'Please specify';
         inp.style.cssText = 'display:none;margin-top:8px;width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #dadce0;border-radius:10px;font-size:0.95rem;color:#202124;outline:none;font-family:inherit;';
         if (isSel) {
           inp.style.display = 'block';
-          if (saved && saved.startsWith('Other; ')) inp.value = saved.slice(7);
+          const prefix = s.freetext + '; ';
+          if (saved && saved.startsWith(prefix)) inp.value = saved.slice(prefix.length);
         }
         inp.addEventListener('input', () => {
           const txt = inp.value.trim();
-          partAAnswers['disciplines'] = txt ? 'Other; ' + txt : 'Other';
+          partAAnswers[s.key] = txt ? (s.freetext + '; ' + txt) : s.freetext;
         });
         inp.addEventListener('focus', () => { inp.style.borderColor = '#a855f7'; });
         inp.addEventListener('blur',  () => { inp.style.borderColor = '#dadce0'; });
@@ -498,8 +613,9 @@
     });
   }
 
-  function selectPartA(key, value, multi, btn) {
-    if (multi) {
+  function selectPartA(s, value, btn) {
+    const key = s.key;
+    if (s.multi) {
       const cur = Array.isArray(partAAnswers[key]) ? partAAnswers[key] : [];
       const idx = cur.indexOf(value);
       if (idx === -1) {
@@ -515,26 +631,41 @@
       btn.classList.add('selected');
     }
 
-    // Disciplines: show/hide the "Other" free-text input
-    if (key === 'disciplines') {
-      const inp = document.getElementById('disciplines-other-input');
+    // Show / hide the free-text input for this step
+    if (s.freetext) {
+      const inp = document.getElementById(key + '-freetext-input');
       if (inp) {
-        if (value === 'Other') {
+        if (value === s.freetext) {
           inp.style.display = 'block';
           inp.focus();
-          // partAAnswers.disciplines stays as 'Other' until text is typed
         } else {
           inp.style.display = 'none';
           inp.value = '';
         }
       }
     }
+
+    // When discipline changes, clear the saved seniority so stale options are not carried forward
+    if (key === 'disciplines') {
+      delete partAAnswers['seniority'];
+    }
+  }
+
+  // ── Apply discipline word substitution in Likert text ──
+  function applyDisciplineWord(text) {
+    const disc = partAAnswers['disciplines'] || '';
+    const key  = disc.startsWith('Other') ? 'Other' : disc;
+    const word = (DISCIPLINE_WORD[key] !== undefined) ? DISCIPLINE_WORD[key] : 'clinical';
+    if (word === '') {
+      // Remove the placeholder cleanly (handles surrounding spaces)
+      return text.replace(/\s*\[discipline\]\s*/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    return text.replace(/\[discipline\]/g, word);
   }
 
   // ── Likert rendering ───────────────────────────────────
   function renderLikert(li) {
     const part = LIKERT_PARTS[li];
-    const globalStep = PART_A_STEPS.length + li;
 
     let html = `
       <div class="step-label">Part ${part.part} &mdash; ${PART_A_STEPS.length + li + 1} of ${TOTAL_STEPS}</div>
@@ -557,13 +688,14 @@
 
     part.questions.forEach(q => {
       const saved = likertAnswers[q.key] || null;
+      const displayText = applyDisciplineWord(q.text);
       const btns = [1,2,3,4,5].map(n =>
         `<button class="likert-btn${saved === n ? ' selected' : ''}"
                  onclick="selectLikert('${q.key}', ${n}, this)">${n}</button>`
       ).join('');
       html += `
         <div class="likert-item" id="likert-row-${q.key}">
-          <div class="likert-q-text">${escHtml(q.text)}</div>
+          <div class="likert-q-text">${escHtml(displayText)}</div>
           ${btns}
         </div>
       `;
@@ -574,21 +706,48 @@
 
   function selectLikert(key, value, btn) {
     likertAnswers[key] = value;
-    // Deselect siblings in same row
     const row = document.getElementById('likert-row-' + key);
     row.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
   }
 
+  // ── Part G: Open Reflection rendering ─────────────────
+  function renderOpenReflection() {
+    const partGIdx = PART_A_STEPS.length + LIKERT_PARTS.length;
+    let html = `
+      <div class="step-label">Part G &mdash; ${partGIdx + 1} of ${TOTAL_STEPS}</div>
+      <div class="part-section-title">Open Reflection</div>
+      <div class="part-section-sub">All questions are optional — share as much or as little as you like.</div>
+    `;
+    OPEN_REFLECTION_QUESTIONS.forEach(q => {
+      const saved = openReflectionAnswers[q.key] || '';
+      html += `
+        <div class="reflection-item">
+          <span class="reflection-label">${escHtml(q.label)}</span>
+          <textarea class="reflection-input" data-key="${q.key}" rows="3"
+            placeholder="Your thoughts (optional)\u2026"
+          >${escHtml(saved)}</textarea>
+        </div>
+      `;
+    });
+    document.getElementById('step-card').innerHTML = html;
+    // Wire up live storage after DOM is set
+    document.querySelectorAll('.reflection-input').forEach(ta => {
+      const k = ta.dataset.key;
+      ta.addEventListener('input', () => { openReflectionAnswers[k] = ta.value; });
+    });
+  }
+
   // ── Validation ─────────────────────────────────────────
   function validateStep(i) {
+    const partGIdx = PART_A_STEPS.length + LIKERT_PARTS.length;
+    if (i >= partGIdx) return true;   // Part G is entirely optional
+
     if (i < PART_A_STEPS.length) {
-      const s = PART_A_STEPS[i];
+      const s   = PART_A_STEPS[i];
       const val = partAAnswers[s.key];
-      if (s.key === 'disciplines') {
-        // "Other" alone means the free-text field was left empty — not valid
-        return !!val && val !== 'Other';
-      }
+      // Freetext option selected but no text typed yet
+      if (s.freetext && typeof val === 'string' && val === s.freetext) return false;
       return s.multi ? (Array.isArray(val) && val.length > 0) : !!val;
     } else {
       const part = LIKERT_PARTS[i - PART_A_STEPS.length];
@@ -604,9 +763,10 @@
   function goNext() {
     if (!validateStep(step)) {
       if (step < PART_A_STEPS.length) {
-        const s = PART_A_STEPS[step];
-        if (s.key === 'disciplines' && partAAnswers.disciplines === 'Other') {
-          document.getElementById('error-msg').textContent = 'Please specify your role in the text field.';
+        const s   = PART_A_STEPS[step];
+        const val = partAAnswers[s.key];
+        if (s.freetext && val === s.freetext) {
+          document.getElementById('error-msg').textContent = 'Please specify your answer in the text field.';
         } else {
           document.getElementById('error-msg').textContent = 'Please make a selection before continuing.';
         }
@@ -635,14 +795,16 @@
       part_a: {
         age_group:        partAAnswers.age_group        || null,
         gender:           partAAnswers.gender           || null,
+        cluster:          partAAnswers.cluster          || null,
         disciplines:      partAAnswers.disciplines ? [partAAnswers.disciplines] : [],
+        seniority:        partAAnswers.seniority        || null,
         years_healthcare: partAAnswers.years_healthcare || null,
         years_role:       partAAnswers.years_role       || null,
-        seniority:        partAAnswers.seniority        || null,
         ai_frequency:     partAAnswers.ai_frequency     || null,
         ai_tools:         partAAnswers.ai_tools         || []
       },
-      likert_answers: likertAnswers
+      likert_answers:  likertAnswers,
+      open_reflection: openReflectionAnswers
     };
 
     try {
@@ -666,7 +828,7 @@
 
   // ── Utility ────────────────────────────────────────────
   function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   // ── Confetti ────────────────────────────────────────────
@@ -692,7 +854,7 @@
     }));
 
     const START = performance.now();
-    const DURATION = 3200; // ms total; fades in last 800ms
+    const DURATION = 3200;
 
     function draw(now) {
       const elapsed = now - START;

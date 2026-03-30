@@ -152,85 +152,57 @@ TRUST_TASKS = ["Triaging symptoms", "Drafting clinical notes", "Patient educatio
 ACCEPTANCE_PART_A = {
     "age_group":        ["Under 30", "30–39", "40–49", "50–59", "60 or above"],
     "gender":           ["Male", "Female"],
+    "cluster":          ["National University Health System", "National Healthcare Group",
+                         "SingHealth", "Others"],
     "disciplines":      ["Medicine", "Nursing", "Allied Health Professions", "Healthcare Research",
-                         "Healthcare Administration & Operations", "Health Informatics & IT", "Other"],
+                         "Healthcare Administration / Operations", "Other"],
     "years_healthcare": ["Less than 1 year", "1–5 years", "6–10 years", "11–20 years", "More than 20 years"],
     "years_role":       ["Less than 1 year", "1–3 years", "4–7 years", "8–15 years", "More than 15 years"],
-    "seniority":        ["Student/Intern/Trainee", "Junior staff", "Mid-level staff",
-                         "Senior/Specialist", "Leadership/Director"],
     "ai_frequency":     ["Always", "Often", "Sometimes", "Rarely", "Never"],
     "ai_tools":         ["Commercial AI (ChatGPT, Gemini, Claude)",
                          "Institutional AI (Medivoice, RussellGPT, BotNUHS, Notebuddy, etc.)",
                          "Government AI (Pair, Transcribe, Tandem)",
-                         "Clinical Specific AI (AVAT)"],
+                         "Clinically Integrated AI (tools supporting clinical decision-making, diagnosis, e.g. Automated Visual Acuity Test)"],
 }
 
 # Likert questions per part. Keys match the JSON keys stored in the DB (e.g. "B1", "C3").
+# Questions containing [discipline] are substituted client-side based on the respondent's discipline.
 ACCEPTANCE_LIKERT = {
     "B": {
         "title": "AI, Deskilling, and Upskilling",
         "questions": {
-            "B1":  "I feel that relying on AI tools could cause healthcare professionals to lose core clinical skills over time.",
-            "B2":  "I feel that relying on AI tools could cause healthcare professionals to lose professional communication skills over time.",
-            "B3":  "I worry that overreliance on AI recommendations reduces the quality of independent clinical reasoning.",
-            "B4":  "I worry that early-career staff may not develop foundational competencies if AI handles too many tasks for them.",
-            "B5":  "AI in my department has already changed how much independent thinking is expected of staff.",
-            "B6":  "I am concerned that training programmes will adopt AI tools in response to availability rather than at the appropriate stage of a learner's development.",
-            "B7":  "I worry that educators are not adequately prepared to teach clinical reasoning skills in environments where AI tools are readily available.",
-            "B8":  "As AI tools are introduced into training programmes, I am concerned that trainees will review AI outputs before forming their own clinical assessment.",
-            "B9":  "I am concerned that as AI flattens the learning curve, early-career staff would miss opportunities to grapple with complex issues in order to foster adaptive expertise.",
-            "B10": "I am concerned that future healthcare providers will over-rely on AI, eroding their ability to develop essential skills like critical thinking, reasoning, and clinical decision-making.",
-            "B11": "I believe that AI tools can free up time for me to develop higher-order clinical skills.",
-            "B12": "I believe that reviewing AI recommendations can actively sharpen my clinical skills.",
-            "B13": "AI has the potential to standardise quality and raise performance across all staff levels.",
-            "B14": "I believe that AI assistance helps me focus more on interpersonal interaction and empathy.",
+            "B1": "I believe that relying on AI tools causes me to lose core [discipline] skills over time.",
+            "B2": "I believe that relying on AI tools causes me to lose professional communication skills over time.",
+            "B3": "I believe that overrelying on AI recommendations reduces the quality of independent [discipline] reasoning.",
+            "B4": "I believe that early-career staff may not develop foundational competencies if AI handles too many tasks for them.",
+            "B5": "I believe that with the help of AI, early-career staff may miss opportunities to grapple with complex issues that foster adaptive learning.",
+            "B6": "I believe that AI tools free up my time to develop higher-order [discipline] skills.",
+            "B7": "I believe that reviewing AI recommendations actively sharpens my [discipline] skills.",
         }
     },
     "C": {
-        "title": "Professional Identity and AI",
+        "title": "Perception of AI Adoption",
         "questions": {
-            "C1": "I fear that AI will reduce the perceived expertise of healthcare professionals in my discipline in the eyes of the public.",
-            "C2": "If AI can perform the tasks I was trained for, my professional standing within healthcare may be undermined.",
-            "C3": "I fear that using AI will reduce my autonomy in making clinical or professional decisions.",
-            "C4": "Using AI would make it harder for me to fulfil my role as a healthcare provider.",
-            "C5": "I feel personally threatened by the idea of AI performing tasks central to my role.",
-            "C6": "AI could help me become a more effective and confident healthcare professional.",
-            "C7": "The use of AI would allow me to focus on the most meaningful aspects of my role.",
+            "C1": "I believe that AI makes my specialised [discipline] knowledge appear less valuable to others.",
+            "C2": "I believe that my professional standing within healthcare is undermined if AI can perform the tasks I was trained for.",
+            "C3": "I would not want AI to change the way I currently work.",
+            "C4": "I would not rely on AI recommendations to make [discipline] decisions.",
+            "C5": "I would not feel comfortable using AI in high-stakes decisions in my work.",
+            "C6": "I believe that the benefits of AI in healthcare outweigh the risks or costs of implementing it.",
+            "C7": "I believe that AI tools improve the quality of decisions in my organisation.",
+            "C8": "I believe that AI tools reduce my administrative burden.",
         }
     },
     "D": {
-        "title": "Resistance to AI Adoption",
-        "questions": {
-            "D1": "I do not want AI to change the way I currently work.",
-            "D2": "I would prefer to rely on my own professional judgement rather than AI recommendations to make clinical or professional decisions.",
-            "D3": "I would feel uncomfortable if AI were to be heavily involved in decisions about my patients or work area.",
-            "D4": "I would be more open to using AI if it has been proven to improve patient outcomes or work efficiency.",
-            "D5": "If AI could reduce my administrative burden, I would be more open to using it.",
-            "D6": "I would be more likely to use AI tools if I could easily see how they benefit my specific role.",
-            "D7": "If my colleagues found AI tools useful, I would be more likely to adopt them too.",
-            "D8": "I would be influenced by how my peers or supervisors view the use of AI tools at work.",
-        }
-    },
-    "E": {
-        "title": "Perceived Value of AI",
-        "questions": {
-            "E1": "Overall, the benefits of AI in healthcare outweigh the risks or costs of implementing it.",
-            "E2": "AI tools in healthcare will improve the quality and accuracy of decisions in my department.",
-            "E3": "AI has the potential to reduce staff burnout by automating repetitive, time-consuming tasks.",
-            "E4": "AI will meaningfully improve the experience of patients in our system.",
-            "E5": "Overall, I believe AI will have a positive impact on my professional role.",
-        }
-    },
-    "F": {
         "title": "Organisational Culture and Support for AI",
         "questions": {
-            "F1": "My organisation's leadership actively ensures the responsible use of AI.",
-            "F2": "I feel psychologically safe to raise concerns or questions about AI in my workplace if it is implemented.",
-            "F3": "I have received adequate training to use AI tools confidently in my role.",
-            "F4": "I am aware of the limitations that come with AI tools.",
-            "F5": "I feel capable of critically evaluating and overriding AI recommendations when necessary.",
-            "F6": "My workplace has the technical infrastructure needed to support the effective implementation of AI tools.",
-            "F7": "I feel that my workplace will take into consideration feedback from its employees during the selection and deployment of AI tools.",
+            "D1": "I believe that my organisation actively promotes the use of AI at work.",
+            "D2": "I believe that it is safe to raise concerns or questions about AI in my organisation.",
+            "D3": "I believe that my organisation considers employees' feedback in the selection and deployment of AI tools.",
+            "D4": "I believe that my organisation prioritises AI implementation.",
+            "D5": "I believe that my organisation provides enough resources and training to support the use of AI.",
+            "D6": "I believe that I am able to use AI tools confidently in my role.",
+            "D7": "I believe that I am capable of critically evaluating and overriding AI recommendations when necessary.",
         }
     },
 }
@@ -294,17 +266,31 @@ def init_db():
         timestamp TEXT NOT NULL,
         age_group TEXT,
         gender TEXT,
+        cluster TEXT,
         disciplines TEXT,
         years_healthcare TEXT,
         years_role TEXT,
         seniority TEXT,
         ai_frequency TEXT,
         ai_tools TEXT,
-        likert_answers TEXT
+        likert_answers TEXT,
+        open_reflection TEXT
     )""")
     # Migration: add participant_id to sentiment_responses (safe no-op if already exists)
     try:
         c.execute("ALTER TABLE sentiment_responses ADD COLUMN participant_id TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
+    # Migration: add cluster to acceptance_responses
+    try:
+        c.execute("ALTER TABLE acceptance_responses ADD COLUMN cluster TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
+    # Migration: add open_reflection to acceptance_responses
+    try:
+        c.execute("ALTER TABLE acceptance_responses ADD COLUMN open_reflection TEXT")
         conn.commit()
     except sqlite3.OperationalError:
         pass
@@ -681,20 +667,31 @@ def api_export_excel():
     likert_items = [(k, q_text)
                     for part_val in ACCEPTANCE_LIKERT.values()
                     for k, q_text in part_val["questions"].items()]
-    ac_headers = ["Participant ID", "Timestamp", "Age Group", "Gender", "Disciplines",
-                  "Years in Healthcare", "Years in Current Role", "Seniority",
+    open_refl_keys = [
+        ("G1", "G1: Which tasks would you like AI to assist you with?"),
+        ("G2", "G2: Biggest concern about AI in your area of work?"),
+        ("G3", "G3: What would make you more confident using AI?"),
+        ("G4", "G4: Anything else you'd like to share about AI in healthcare?"),
+    ]
+
+    ac_headers = ["Participant ID", "Timestamp", "Age Group", "Gender", "Cluster",
+                  "Disciplines", "Years in Healthcare", "Years in Current Role", "Seniority",
                   "AI Usage Frequency", "AI Tools Used"]
     ac_headers += [text for _, text in likert_items]
+    ac_headers += [label for _, label in open_refl_keys]
     ws3.append(ac_headers)
     for cell in ws3[1]: cell.font = bold
 
     for r in conn.execute("SELECT * FROM acceptance_responses ORDER BY id").fetchall():
         likert = json.loads(r["likert_answers"] or "{}")
+        reflection = json.loads(r["open_reflection"] or "{}") if r["open_reflection"] else {}
         row = [r["participant_id"], r["timestamp"], r["age_group"], r["gender"],
+               r["cluster"] or "",
                ", ".join(json.loads(r["disciplines"] or "[]")),
                r["years_healthcare"], r["years_role"], r["seniority"], r["ai_frequency"],
                ", ".join(json.loads(r["ai_tools"] or "[]"))]
         row += [likert.get(k, "") for k, _ in likert_items]
+        row += [reflection.get(k, "") for k, _ in open_refl_keys]
         ws3.append(row)
 
     conn.close()
@@ -827,24 +824,27 @@ def api_acceptance_submit():
     likert = d.get("likert_answers", {})
 
     # Validate required Part A single-select fields
-    required = ["age_group", "gender", "years_healthcare", "years_role", "seniority", "ai_frequency"]
+    required = ["age_group", "gender", "cluster", "years_healthcare", "years_role", "ai_frequency"]
     missing = [f for f in required if not part_a.get(f)]
     if missing:
         return jsonify({"error": f"Missing required fields: {', '.join(missing)}"}), 400
 
     participant_id = str(uuid.uuid4())[:8]
     ts = datetime.now().isoformat()
+    open_reflection = d.get("open_reflection", {})
 
     conn = get_db()
     conn.execute(
         """INSERT INTO acceptance_responses
-           (participant_id, timestamp, age_group, gender, disciplines,
-            years_healthcare, years_role, seniority, ai_frequency, ai_tools, likert_answers)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+           (participant_id, timestamp, age_group, gender, cluster, disciplines,
+            years_healthcare, years_role, seniority, ai_frequency, ai_tools,
+            likert_answers, open_reflection)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             participant_id, ts,
             part_a.get("age_group", ""),
             part_a.get("gender", ""),
+            part_a.get("cluster", ""),
             json.dumps(part_a.get("disciplines", [])),
             part_a.get("years_healthcare", ""),
             part_a.get("years_role", ""),
@@ -852,6 +852,7 @@ def api_acceptance_submit():
             part_a.get("ai_frequency", ""),
             json.dumps(part_a.get("ai_tools", [])),
             json.dumps(likert),
+            json.dumps(open_reflection),
         )
     )
     conn.commit()
@@ -874,7 +875,7 @@ def api_acceptance_stats():
         })
 
     # Part A — frequency distributions for each categorical field
-    part_a_fields = ["age_group", "gender", "disciplines", "years_healthcare",
+    part_a_fields = ["age_group", "gender", "cluster", "disciplines", "years_healthcare",
                      "years_role", "seniority", "ai_frequency", "ai_tools"]
     part_a_stats = {}
     for field in part_a_fields:

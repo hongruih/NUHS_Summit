@@ -66,7 +66,7 @@ QUESTIONS = [
     "What changes, if any, do you anticipate AI bringing to your work?",
     "What would make you more confident or willing to use AI tools in your daily practice?",
     "What concerns, if any, do you have about the use of AI in healthcare?",
-    "How do you think AI could best support — rather than replace — the human elements of healthcare?",
+    "How do you think AI could best support, rather than replace, the human elements of healthcare?",
 ]
 STOP_WORDS = set("i me my myself we our ours ourselves you your yours yourself yourselves "
     "he him his himself she her hers herself it its itself they them their theirs "

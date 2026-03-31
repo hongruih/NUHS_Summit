@@ -30,7 +30,7 @@ The app serves two audiences simultaneously:
 
 | Survey | Route | Description |
 |---|---|---|
-| AI vs Human | `/survey/turing` | Read 5 clinical scenarios and guess which response was written by AI vs a real doctor; rate trust, empathy, safety, and usefulness |
+| AI vs Human | `/survey/turing` | 9-step activity: consent → demographics → 3 Scenarios + 2 Conversations (judge whether a response or clinician is human or AI) → trust tasks → results; each item reveals the correct answer inline after submission |
 | AI Perspectives | `/survey/sentiment` | Answer 4 open-ended questions about AI in healthcare; responses are transcribed (mic or typed) and analysed for sentiment in real time |
 | AI Acceptance Survey | `/survey/acceptance` | 13-step structured survey — 9 biographical questions (Part A, including cluster and branching seniority) + 22 Likert-scale statements across 3 thematic parts (B–D, with discipline-specific wording) + 4 optional open-ended questions (Part G) |
 
@@ -144,7 +144,7 @@ Copy `.env.example` to `.env` for local use. On Render/Railway, set these in the
 
 1. Navigate to `http://<host>/` on any device (phone, tablet, or desktop).
 2. Choose a survey card:
-   - **AI vs Human** — read 5 clinical scenarios; guess which response was written by AI; rate the AI response on trust, empathy, safety, and usefulness. If your job group is "Other", an inline text field appears to capture your actual role.
+   - **AI vs Human** — read a consent screen, fill in your demographics, then work through 3 Scenarios (single response, judge Human or AI) and 2 Conversations (multi-turn dialog, judge the clinician); after each item you rate quality on trust, empathy, safety, and usefulness, then the correct answer is revealed inline. If your job group is "Other", an inline text field appears to capture your actual role.
    - **AI Perspectives** — tap the mic or type answers to 4 open-ended questions; after each submission, a sentiment result (Positive / Neutral / Negative) is shown.
    - **AI Acceptance Survey** — review the consent/intro screen, then work through 9 biographical questions (including cluster and a discipline-branching seniority picker), 22 Likert statements across Parts B–D (with `[discipline]`-personalised wording), and 4 optional open-ended reflection questions (Part G). On completion, a gift message prompts participants to show the screen at the Healthcare Redesign booth.
 3. All surveys are self-paced and fully mobile-responsive.
@@ -195,14 +195,12 @@ App/
 | Lines | Section |
 |---|---|
 | 1–37 | Module docstring and imports |
-| 47–68 | `QUESTIONS` (4 open-ended) and `STOP_WORDS` |
-| 70–126 | `SCENARIOS` — 5 clinical Turing test cases with `ai_index` ground truth |
-| 128–133 | `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS` |
-| 134–208 | `ACCEPTANCE_PART_A` (8 fields; seniority is dynamic in JS) and `ACCEPTANCE_LIKERT` (Parts B–D, 22 questions with `[discipline]` placeholder) |
-| 223–299 | Database: `get_db()`, `init_db()` — 5 tables + migration |
-| 301–341 | Sentiment helpers: `sentiment()`, `extract_words()`, `get_entries()`, `stats_for()` |
-| 343–457 | `get_turing_stats()` — full analytics with optional job-group filter |
-| 460–887 | Flask routes (participant pages, admin, all API endpoints, Excel export) |
+| 47–68 | `QUESTIONS` (4 open-ended; Q4 uses commas not em dashes) and `STOP_WORDS` |
+| 85–215 | `TURING_ITEMS` — 3 Scenarios + 2 Conversations (each with `id`, `section`, `label`, `type`, `is_ai`, `correct_answer`; Scenarios have `patient`/`response`; Conversations have `turns[]`); `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`; `ACCEPTANCE_PART_A` (8 fields; seniority is dynamic in JS); `ACCEPTANCE_LIKERT` (Parts B–D, 22 questions with `[discipline]` placeholder) |
+| ~220–320 | Database: `get_db()`, `init_db()` — 5 tables + migrations; `turing_answers` auto-migrates to new schema if `item_id` column is absent |
+| ~320–360 | Sentiment helpers: `sentiment()`, `extract_words()`, `get_entries()`, `stats_for()` |
+| ~360–470 | `get_turing_stats()` — returns `by_item` (per-item accuracy + avg ratings, grouped by section) with optional job-group filter |
+| ~470+ | Flask routes (participant pages, admin, all API endpoints, Excel export) |
 
 ---
 
@@ -227,9 +225,9 @@ App/
 | `POST` | `/api/submit` | Submit a sentiment response — body: `{text, question_index, participant_id?}`; returns `400` if profanity detected |
 | `GET` | `/api/q/<int:q>` | Word cloud + stats + last 15 entries for question index 0–3 |
 | `GET` | `/api/all` | All questions' word clouds + sentiment + Turing snapshot |
-| `POST` | `/api/turing/submit` | Submit a completed Turing test — body: `{job_group, seniority, answers[], tasks[]}` |
-| `GET` | `/api/turing/stats` | Full Turing test analytics; optional `?job_group=` filter |
-| `GET` | `/api/turing/scenarios` | Scenarios without AI labels — used by the survey frontend |
+| `POST` | `/api/turing/submit` | Submit a completed AI vs Human survey — body: `{job_group, seniority, answers[{item_id, section, guess, ratings}], tasks[]}` |
+| `GET` | `/api/turing/stats` | Full AI vs Human analytics; optional `?job_group=` filter; returns `by_item` with per-item accuracy and avg ratings |
+| `GET` | `/api/turing/scenarios` | Items without `is_ai`/`correct_answer` (safe for external consumers) |
 | `POST` | `/api/acceptance/submit` | Submit AI Acceptance Survey — body: `{part_a: {...}, likert_answers: {B1: 3, ...}, open_reflection: {G1: "...", ...}}` |
 | `GET` | `/api/acceptance/stats` | Acceptance survey analytics — Part A distributions + Likert averages |
 | `POST` | `/api/reset` | Wipe all data from all 5 tables |
@@ -255,8 +253,8 @@ The admin dashboard (`/admin`) has **7 tabs** arranged in two visual groups sepa
 
 | Tab | Contents |
 |---|---|
-| **🤖 AI vs Human** | Live Turing test results: hero stats (total respondents, overall accuracy, fooled %), accuracy bars by job group and seniority, per-scenario breakdown, average trust/empathy/safety/usefulness ratings, trusted AI tasks chart, recent respondents list; filterable by job group |
-| **💬 AI Perspectives** | All 3 questions' word clouds and sentiment distributions shown side-by-side |
+| **🤖 AI vs Human** | Live results: hero stats (total respondents, overall accuracy, fooled %), accuracy bars by job group and seniority, **Accuracy by Item** card showing Scenarios and Conversations in separate sub-sections with per-item accuracy and inline avg ratings (Trust/Empathy/Safety/Usefulness), trusted AI tasks chart; filterable by job group |
+| **💬 AI Perspectives** | All **4** questions' word clouds and sentiment distributions shown side-by-side |
 | **📋 AI Acceptance** | Part A demographic distributions (age, gender, cluster, disciplines, seniority, AI usage frequency, AI tools); Parts B–D Likert question averages with response counts |
 
 **Status bar** (top-right header, 4 pills):
@@ -303,19 +301,22 @@ One row per Turing test survey respondent.
 | `timestamp` | TEXT | ISO 8601 |
 
 ### `turing_answers`
-One row per scenario per respondent.
+One row per item per respondent (5 rows per survey completion — 3 Scenarios + 2 Conversations).
 
 | Column | Type | Notes |
 |---|---|---|
 | `respondent_id` | TEXT | FK to `turing_responses` |
-| `scenario_id` | TEXT | `s1`–`s5` |
-| `guessed_ai_index` | INTEGER | 0 or 1 — which response the participant thought was AI |
-| `correct` | INTEGER | 1 if correct, 0 if not |
+| `item_id` | TEXT | e.g. `scenario_1`, `scenario_2`, `scenario_3`, `conversation_1`, `conversation_2` |
+| `section` | TEXT | `Scenario` or `Conversation` |
+| `guess` | TEXT | `Human Clinician` or `AI` |
+| `correct` | INTEGER | 1 if guess matches `correct_answer`, 0 otherwise |
 | `rating_trust` | INTEGER | 1–5 |
 | `rating_empathy` | INTEGER | 1–5 |
 | `rating_safety` | INTEGER | 1–5 |
 | `rating_usefulness` | INTEGER | 1–5 |
 | `timestamp` | TEXT | ISO 8601 |
+
+> **Schema migration**: if the table was created with the old schema (which had `guessed_ai_index`/`scenario_id`), `init_db()` automatically drops and recreates it with the new schema. This is safe to run before the event; after real data exists the `item_id` column will already be present so the migration is skipped.
 
 ### `turing_tasks`
 Multi-select trust tasks; one row per task per respondent.
@@ -344,7 +345,7 @@ One row per AI Acceptance Survey respondent.
 | `likert_answers` | TEXT | JSON object e.g. `{"B1": 3, "B2": 4, ..., "D7": 5}` covering all 22 questions across Parts B–D |
 | `open_reflection` | TEXT | JSON object e.g. `{"G1": "...", "G2": "...", "G3": "...", "G4": "..."}` — Part G optional free-text responses |
 
-> The `ai_index` field in `SCENARIOS` (0 or 1) records which response is AI-generated. It is **never** sent to the survey frontend — only used server-side to score answers.
+> The `is_ai` and `correct_answer` fields in `TURING_ITEMS` are **never stored in the DB**. They are embedded in the survey page JS for client-side inline reveal only (acceptable for a booth activity with no security requirement).
 
 ---
 
@@ -382,7 +383,7 @@ HTTP 400
 { "error": "Inappropriate content" }
 ```
 
-### Submit a Turing test survey
+### Submit an AI vs Human survey
 
 ```
 POST /api/turing/submit
@@ -393,16 +394,23 @@ Content-Type: application/json
   "seniority": "Mid-career (5–15 years)",
   "answers": [
     {
-      "scenario_id": "s1",
-      "guessed_ai_index": 1,
-      "ratings": { "trust": 3, "empathy": 4, "safety": 3, "usefulness": 2 }
+      "item_id": "scenario_1",
+      "section": "Scenario",
+      "guess": "Human Clinician",
+      "ratings": { "trust": 4, "empathy": 5, "safety": 4, "usefulness": 3 }
+    },
+    {
+      "item_id": "conversation_1",
+      "section": "Conversation",
+      "guess": "AI",
+      "ratings": { "trust": 3, "empathy": 2, "safety": 3, "usefulness": 3 }
     }
   ],
   "tasks": ["Triaging symptoms", "Patient education"]
 }
 ```
 
-Response includes `results[]` with `correct`, `ai_index`, and `explanation` per scenario.
+Response includes `results[]` with `item_id`, `correct` (bool), and `correct_answer` per item.
 
 > `job_group` may be `"Other; Facilities Management"` when the participant selected "Other" and typed a custom role.
 
@@ -461,7 +469,7 @@ Downloads a `.xlsx` file (`nuhs_summit_YYYYMMDD_HHMM.xlsx`) with three sheets:
 | Sheet | Format | Contents |
 |---|---|---|
 | **Sentiment Responses** | Wide (one row per participant) | Participant ID + Q1–Q4 transcript, sentiment label, polarity + timestamp |
-| **Turing Test** | Wide (one row per respondent) | Participant ID, job group, seniority, trusted tasks + per-scenario correct/ratings |
+| **Turing Test** | Wide (one row per respondent) | Participant ID, job group, seniority, trusted tasks + per-item correct/ratings (Scenario 1–3 then Conversation 1–2, 5 columns each) |
 | **AI Acceptance Survey** | Wide (one row per respondent) | All Part A fields (incl. Cluster) + one column per Likert question (full question text as header, Parts B–D) + four Part G open-reflection columns |
 
 ---

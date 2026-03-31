@@ -31,9 +31,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .ov-wrap{padding:24px 28px;max-width:1100px;margin:0 auto}
 .ov-title{font-size:1rem;font-weight:600;margin-bottom:16px;color:var(--t2)}.ov-title b{color:var(--am)}
 .ov-grid{display:grid;grid-template-columns:1fr;gap:20px;margin-bottom:20px}
-.ov-wc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ov-wc-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .ov-wc-card{border-radius:var(--r);border:1px solid var(--bd);background:var(--c1);padding:14px;display:flex;flex-direction:column}
-.ov-wc-card.q0{border-color:rgba(6,182,212,.2)}.ov-wc-card.q1{border-color:rgba(168,85,247,.2)}.ov-wc-card.q2{border-color:rgba(245,158,11,.2)}
+.ov-wc-card.q0{border-color:rgba(6,182,212,.2)}.ov-wc-card.q1{border-color:rgba(168,85,247,.2)}.ov-wc-card.q2{border-color:rgba(245,158,11,.2)}.ov-wc-card.q3{border-color:rgba(34,197,94,.2)}
 .ov-wc-card h3{font-size:.62rem}.ov-wc-card .qtext{font-size:.72rem;color:var(--t2);line-height:1.4;margin-bottom:8px}
 .ov-card{border-radius:var(--r);border:1px solid var(--bd);background:var(--c1);padding:18px;display:flex;flex-direction:column}
 .ov-card h3,.card h3{font-size:.7rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:10px}
@@ -44,10 +44,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .b3 .n{font-size:1.8rem;font-weight:700;display:block}.b3 .l{font-size:.6rem;font-family:'Space Mono',monospace;color:var(--t3)}
 .b3.gn .n{color:var(--gn)}.b3.am .n{color:var(--am)}.b3.rd .n{color:var(--rd)}.b3.pk .n{color:var(--pk)}.b3.cy .n{color:var(--cy)}.b3.bl .n{color:var(--bl)}
 .avg{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--t3);text-align:center;margin-top:8px}
-.pqg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.pqg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
 .pqb{border-radius:var(--rs);border:1px solid var(--bd);background:var(--c1);padding:12px}
 .pqb h4{font-size:.62rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.pqb.q0 h4{color:var(--cy)}.pqb.q1 h4{color:var(--pu)}.pqb.q2 h4{color:var(--am)}
+.pqb.q0 h4{color:var(--cy)}.pqb.q1 h4{color:var(--pu)}.pqb.q2 h4{color:var(--am)}.pqb.q3 h4{color:var(--gn)}
 .pqn{display:flex;gap:6px;font-size:.72rem;font-weight:600}
 .pqn span{flex:1;text-align:center;padding:4px;border-radius:4px;background:var(--c2)}
 .pqn .g{color:var(--gn)}.pqn .a{color:var(--am)}.pqn .r{color:var(--rd)}
@@ -118,8 +118,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .dhd.q0{background:linear-gradient(135deg,rgba(59,130,246,.05),rgba(6,182,212,.05))}
 .dhd.q1{background:linear-gradient(135deg,rgba(168,85,247,.05),rgba(236,72,153,.05))}
 .dhd.q2{background:linear-gradient(135deg,rgba(245,158,11,.05),rgba(239,68,68,.05))}
+.dhd.q3{background:linear-gradient(135deg,rgba(34,197,94,.05),rgba(6,182,212,.05))}
 .dhd .dn{font-family:'Space Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:3px}
-.dhd.q0 .dn{color:var(--cy)}.dhd.q1 .dn{color:var(--pu)}.dhd.q2 .dn{color:var(--am)}
+.dhd.q0 .dn{color:var(--cy)}.dhd.q1 .dn{color:var(--pu)}.dhd.q2 .dn{color:var(--am)}.dhd.q3 .dn{color:var(--gn)}
 .dbd{display:grid;grid-template-columns:1.2fr .8fr;min-height:200px}
 .dwc{padding:14px;border-right:1px solid var(--bd);display:flex;align-items:center;justify-content:center}
 .dwc svg{width:100%;height:auto}
@@ -261,11 +262,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 <div class="pnl on" id="pnl_ov"><div class="ov-wrap">
 <div class="ov-title"><b>Live Overview</b> — All responses · <span style="font-size:.7rem;color:var(--t3)">Auto-refreshes every 10s</span></div>
 
-<!-- 3 per-question word clouds -->
+<!-- 4 per-question word clouds -->
 <div class="ov-wc-row">
   <div class="ov-wc-card q0"><button class="xpand" onclick="expandWC(0,'Q1 Word Cloud')">⤢ Expand</button><h3 style="color:var(--cy)">Q1 Word Cloud</h3><div class="qtext">{{ questions[0] }}</div><div class="ov-wc" id="ovWC0"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q1 responses yet</div></div></div>
   <div class="ov-wc-card q1"><button class="xpand" onclick="expandWC(1,'Q2 Word Cloud')">⤢ Expand</button><h3 style="color:var(--pu)">Q2 Word Cloud</h3><div class="qtext">{{ questions[1] }}</div><div class="ov-wc" id="ovWC1"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q2 responses yet</div></div></div>
   <div class="ov-wc-card q2"><button class="xpand" onclick="expandWC(2,'Q3 Word Cloud')">⤢ Expand</button><h3 style="color:var(--am)">Q3 Word Cloud</h3><div class="qtext">{{ questions[2] }}</div><div class="ov-wc" id="ovWC2"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q3 responses yet</div></div></div>
+  <div class="ov-wc-card q3"><button class="xpand" onclick="expandWC(3,'Q4 Word Cloud')">⤢ Expand</button><h3 style="color:var(--gn)">Q4 Word Cloud</h3><div class="qtext">{{ questions[3] }}</div><div class="ov-wc" id="ovWC3"><div class="ov-empty" style="padding:20px;font-size:.8rem">No Q4 responses yet</div></div></div>
 </div>
 
 <div class="ov-grid" style="margin-top:20px">
@@ -543,7 +545,7 @@ function newRespondent(){
 // ════════════════════════════════════════════════════════
 // MODAL
 // ════════════════════════════════════════════════════════
-let lastWCData=[null,null,null];
+let lastWCData=Array.from({length:QS.length},()=>null);
 let _md={};  // modal data store: id → {title, html}
 function openModal(title,html){$('modalTitle').textContent=title;$('modalBody').innerHTML=html;$('modal').classList.add('on')}
 function closeModal(){$('modal').classList.remove('on')}
@@ -595,8 +597,8 @@ async function loadQ(q){
 
 async function loadOv(){
   try{let d=await(await fetch('/api/all')).json(),a=d.agg;
-    // Per-question word clouds
-    for(let i=0;i<QN;i++){
+    // Per-question word clouds (all QS.length questions)
+    for(let i=0;i<QS.length;i++){
       let qd=d[String(i)];
       let wc=$('ovWC'+i);
       if(qd.stats.total===0){
@@ -608,7 +610,7 @@ async function loadOv(){
     }
     $('ovPos').textContent=a.stats.positive;$('ovNeu').textContent=a.stats.neutral;$('ovNeg').textContent=a.stats.negative;
     $('ovAvg').textContent=`Avg polarity: ${a.stats.avg_polarity} · Total: ${a.stats.total}`;
-    let h='';for(let i=0;i<QN;i++){let s=d[String(i)].stats;h+=`<div class="pqb q${i}"><h4>Q${i+1} · ${s.total} responses</h4><div class="pqn"><span class="g">${s.positive}</span><span class="a">${s.neutral}</span><span class="r">${s.negative}</span></div><div class="pqt">Avg: ${s.avg_polarity}</div></div>`}
+    let h='';for(let i=0;i<QS.length;i++){let s=d[String(i)].stats;h+=`<div class="pqb q${i}"><h4>Q${i+1} · ${s.total} responses</h4><div class="pqn"><span class="g">${s.positive}</span><span class="a">${s.neutral}</span><span class="r">${s.negative}</span></div><div class="pqt">Avg: ${s.avg_polarity}</div></div>`}
     $('ovPQ').innerHTML=h;
     // Turing snapshot
     let tt=d.turing;
@@ -621,10 +623,10 @@ async function loadOv(){
 
 async function loadDash(){
   try{let d=await(await fetch('/api/all')).json(),g=$('dashG'),h='';
-    for(let q=0;q<QN;q++){let x=d[String(q)],ok=x.stats.total>0;
+    for(let q=0;q<QS.length;q++){let x=d[String(q)],ok=x.stats.total>0;
       h+=`<div class="dblk"><div class="dhd q${q}"><span class="dn">Question ${q+1} — ${x.stats.total} responses</span>${QS[q]}</div><div class="dbd"><div class="dwc" id="dwc_${q}">${ok?'':'<div class="ov-empty">No responses</div>'}</div><div class="dst"><div class="dsr"><div class="dsb gn"><span class="n">${x.stats.positive}</span><span class="l">Positive</span></div><div class="dsb am"><span class="n">${x.stats.neutral}</span><span class="l">Neutral</span></div><div class="dsb rd"><span class="n">${x.stats.negative}</span><span class="l">Negative</span></div></div><div class="dav">Avg polarity: ${x.stats.avg_polarity} · Total: ${x.stats.total}</div>${ok?`<div class="dfd">${[...x.entries].reverse().slice(0,5).map(e=>`<div class="dfi"><span style="color:${e.sentiment.color}">${e.sentiment.emoji}</span> ${e.text.substring(0,100)}${e.text.length>100?'...':''}</div>`).join('')}</div>`:''}</div></div></div>`}
     g.innerHTML=h;
-    for(let q=0;q<QN;q++){let x=d[String(q)];if(x.stats.total>0&&x.words.length)renderWordCloud(document.getElementById(`dwc_${q}`),x.words,450,220)}
+    for(let q=0;q<QS.length;q++){let x=d[String(q)];if(x.stats.total>0&&x.words.length)renderWordCloud(document.getElementById(`dwc_${q}`),x.words,450,220)}
   }catch(e){console.error('loadDash error:',e)}
 }
 

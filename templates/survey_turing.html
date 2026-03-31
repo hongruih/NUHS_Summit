@@ -349,7 +349,7 @@ function submitItem(itemIdx){
     </div>`;
   $(`item${itemIdx}_answer_phase`).style.display='none';
   $(`item${itemIdx}_reveal_phase`).style.display='block';
-  window.scrollTo(0,0);
+  $(`item${itemIdx}_reveal_banner`).scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 // ── Tasks ──────────────────────────────────────────────

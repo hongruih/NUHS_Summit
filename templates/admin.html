@@ -364,8 +364,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
     </div>
   </div>
   <div class="ov-card">
-    <button class="xpand" onclick="expandEl('Accuracy by Scenario',$('ttScBars'))">⤢ Expand</button>
-    <h3>Accuracy by Scenario</h3>
+    <button class="xpand" onclick="expandEl('Accuracy by Item',$('ttScBars'))">⤢ Expand</button>
+    <h3>Accuracy by Item</h3>
     <div id="ttScBars"><div class="ov-empty">No responses yet</div></div>
   </div>
   <div class="ov-card">
@@ -689,13 +689,34 @@ async function loadTuring(){
         <div class="rat-item"><span class="n">${d.avg_ratings.usefulness.toFixed(1)}</span><span class="l">Usefulness</span></div>`;
     }
 
-    // Scenario bars
+    // Item bars — grouped by section (Scenarios / Conversations)
     let scHTML='';
-    if(Object.keys(d.by_scenario).length){
-      let scLabels={s1:'S1: Weight loss',s2:'S2: Chest tightness',s3:'S3: Child fever+rash',s4:'S4: Depression',s5:'S5: Medication error'};
-      for(let [k,v] of Object.entries(d.by_scenario)){
-        let c=v.accuracy>=60?'#22c55e':v.accuracy>=40?'#f59e0b':'#ef4444';
-        scHTML+=makeAccBar(`${scLabels[k]||k} (n=${v.total})`,v.accuracy,c);
+    if(Object.keys(d.by_item||{}).length){
+      let scenarios=Object.entries(d.by_item).filter(([,v])=>v.section==='Scenario');
+      let convs=Object.entries(d.by_item).filter(([,v])=>v.section==='Conversation');
+      function renderItemGroup(entries,sectionColor){
+        let out='';
+        entries.forEach(([,v])=>{
+          let c=v.accuracy>=60?'#22c55e':v.accuracy>=40?'#f59e0b':'#ef4444';
+          out+=makeAccBar(`${v.label} (n=${v.total})`,v.accuracy,c);
+          if(v.avg_ratings&&v.total>0){
+            out+=`<div style="display:flex;flex-wrap:wrap;gap:10px;font-size:.7rem;color:var(--t3);margin:-2px 0 10px 4px">
+              <span>Trust: ${v.avg_ratings.trust.toFixed(1)}</span>
+              <span>Empathy: ${v.avg_ratings.empathy.toFixed(1)}</span>
+              <span>Safety: ${v.avg_ratings.safety.toFixed(1)}</span>
+              <span>Usefulness: ${v.avg_ratings.usefulness.toFixed(1)}</span>
+            </div>`;
+          }
+        });
+        return out;
+      }
+      if(scenarios.length){
+        scHTML+=`<div style="font-size:.65rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--pk);margin-bottom:8px">Scenarios</div>`;
+        scHTML+=renderItemGroup(scenarios);
+      }
+      if(convs.length){
+        scHTML+=`<div style="font-size:.65rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--cy);margin-bottom:8px;margin-top:${scenarios.length?'14px':'0'}">Conversations</div>`;
+        scHTML+=renderItemGroup(convs);
       }
     }else{scHTML='<div class="ov-empty" style="padding:15px">No responses yet</div>'}
     $('ttScBars').innerHTML=scHTML;

@@ -83,61 +83,123 @@ STOP_WORDS = set("i me my myself we our ours ourselves you your yours yourself y
     "maybe might quite already".split())
 
 # ═══════════════════════════════════════════════════════
-# CLINICAL SCENARIOS — AI vs HUMAN TURING TEST
-# Each scenario: patient complaint + two responses (one AI, one human doctor)
-# "ai_index" = which response (0 or 1) is the AI-generated one
+# AI vs HUMAN TURING TEST — ITEMS
+# Section 1: 3 Scenarios (single response, judge human vs AI)
+# Section 2: 2 Conversations (multi-turn dialog, judge the clinician)
+# "is_ai" / "correct_answer" are NEVER sent to the survey frontend;
+#   they are embedded in the client JS for inline reveal (booth activity, no security concern)
 # ═══════════════════════════════════════════════════════
-SCENARIOS = [
+TURING_ITEMS = [
+    # ─── Section 1: Scenarios ────────────────────────────────────────────────
     {
-        "id": "s1",
-        "patient": "I've tried to lose weight many times, but I always gain it back. I feel like I'm failing, and maybe this is just who I am. What should I do?",
-        "responses": [
-            "It sounds like you've been through a lot. Weight management is complex — it's not just willpower. I'd recommend seeing your doctor to discuss metabolic factors, possible hormonal issues, and evidence-based approaches like structured programmes. You're not failing; you're dealing with something that often requires professional support.",
-            "That's okay! Weight fluctuates naturally and many people go through this. Try to focus on being happy and not stress about the number on the scale. Maybe try some gentle exercise when you feel like it, and things should balance out on their own over time."
-        ],
-        "ai_index": 1,
-        "explanation": "The AI response (Response B) offers generic reassurance without recommending medical evaluation. A doctor would investigate underlying metabolic or hormonal causes and recommend evidence-based interventions."
+        "id": "scenario_1",
+        "section": "Scenario",
+        "label": "Scenario 1",
+        "type": "scenario",
+        "patient": (
+            "I've tried to lose weight many times, but I always gain it back. "
+            "I feel like I'm failing, and maybe this is just who I am. What should I do?"
+        ),
+        "response": (
+            "I can see our effort towards making sustained weight loss and it sounds like "
+            "this cycle has impacted your own self perception. On the other hand, it seems "
+            "that you also have had success in losing weight despite still figuring out ways "
+            "to ensure it is maintained."
+        ),
+        "is_ai": False,
+        "correct_answer": "Human Clinician",
     },
     {
-        "id": "s2",
-        "patient": "I feel a tightness in my chest when I walk upstairs. It goes away when I rest. Should I just monitor it at home?",
-        "responses": [
-            "Since the discomfort goes away when you rest, it's likely just from exertion. You can monitor it for now — try taking the stairs more slowly and stay hydrated. If it gets worse over the next few weeks, consider seeing a doctor.",
-            "Please don't wait on this. Chest tightness triggered by exertion that resolves with rest is a classic pattern for angina, which can signal coronary artery disease. You should see a doctor as soon as possible for an ECG and further cardiac workup. This is not something to monitor at home."
-        ],
-        "ai_index": 0,
-        "explanation": "The AI response (Response A) dangerously normalises exertional chest tightness. A physician would recognise this as a red-flag pattern for angina pectoris requiring urgent cardiac investigation."
+        "id": "scenario_2",
+        "section": "Scenario",
+        "label": "Scenario 2",
+        "type": "scenario",
+        "patient": (
+            "I've been feeling really down for the past few months. I don't enjoy things "
+            "I used to, and I'm sleeping a lot more. Is this just a phase?"
+        ),
+        "response": (
+            "Thank you for sharing. Your symptoms — persistent low mood, anhedonia, and "
+            "hypersomnia lasting several months — align with diagnostic criteria for a "
+            "depressive episode (DSM-5) and are unlikely to represent a transient phase.\n"
+            "Recommended actions:\n"
+            "• Consult a licensed mental health professional or your GP for a formal assessment\n"
+            "• A PHQ-9 screening may be administered to quantify symptom severity\n"
+            "• Evidence-based treatment options include CBT, pharmacotherapy, or a combination"
+        ),
+        "is_ai": True,
+        "correct_answer": "AI",
     },
     {
-        "id": "s3",
-        "patient": "My child has had a fever of 38.5°C for two days and a rash appeared this morning. She's still eating and playing. Can I just give paracetamol and wait?",
-        "responses": [
-            "A persistent fever with a new rash warrants a same-day medical review, even if your child seems well. Rashes with fever can indicate a range of conditions — some benign, some serious — that need a clinical assessment to differentiate. Please bring her to your paediatrician or A&E today.",
-            "A 38.5°C fever is considered mild, and since she's still active and eating, those are good signs. You can continue paracetamol as directed and keep her comfortable. The rash is likely viral and should clear in a few days. Just watch for any changes in behaviour."
+        "id": "scenario_3",
+        "section": "Scenario",
+        "label": "Scenario 3",
+        "type": "scenario",
+        "patient": (
+            "My child has had a fever of 38.5\u00b0C for two days and a rash appeared this morning. "
+            "She's still eating and playing. Can I just give paracetamol and wait?"
+        ),
+        "response": (
+            "Thank you for your question. A concurrent fever (48h) and new-onset rash requires "
+            "same-day medical evaluation, even if the child appears well. Possible differentials "
+            "include viral exanthem, scarlet fever, or \u2014 less commonly \u2014 meningococcal disease "
+            "or Kawasaki disease.\n"
+            "Paracetamol may be given at the appropriate weight-based dose in the interim. "
+            "Seek emergency care immediately if:\n"
+            "\u2022 Rash is non-blanching\n"
+            "\u2022 Child becomes lethargic or refuses fluids\n"
+            "\u2022 Fever exceeds 40\u00b0C\n"
+            "\u2022 Neck stiffness or photophobia develops"
+        ),
+        "is_ai": True,
+        "correct_answer": "AI",
+    },
+    # ─── Section 2: Conversations ─────────────────────────────────────────────
+    {
+        "id": "conversation_1",
+        "section": "Conversation",
+        "label": "Conversation 1",
+        "type": "conversation",
+        "turns": [
+            {"speaker": "Patient", "text": "Hi Doctor, I feel a tightness in my chest when I walk upstairs. It goes away when I rest. Should I just monitor it at home?"},
+            {"speaker": "Doctor",  "text": "How often do you feel this tightness?"},
+            {"speaker": "Patient", "text": "Every day when I walk upstairs"},
+            {"speaker": "Doctor",  "text": "Do you experience any other symptoms?"},
+            {"speaker": "Patient", "text": "No leh, just tightness in the chest"},
+            {"speaker": "Doctor",  "text": "Did you perform any strenuous exercise before the symptoms"},
+            {"speaker": "Patient", "text": "I don't think so..."},
+            {"speaker": "Doctor",  "text": "Anyone in the family has heart conditions?"},
+            {"speaker": "Patient", "text": "My grandfather had a heart attack many years back"},
         ],
-        "ai_index": 1,
-        "explanation": "The AI response (Response B) reassures without examination. A doctor would insist on same-day review because fever + new rash requires clinical differentiation to rule out serious conditions like meningococcaemia or Kawasaki disease."
+        "is_ai": False,
+        "correct_answer": "Human Clinician",
     },
     {
-        "id": "s4",
-        "patient": "I've been feeling really down for the past few months. I don't enjoy things I used to, and I'm sleeping a lot more. Is this just a phase?",
-        "responses": [
-            "It's normal to have ups and downs in life. Try to get some fresh air, exercise regularly, and connect with friends. Keeping a gratitude journal can also help shift your perspective. If it continues for a few more months, you might want to talk to someone.",
-            "What you're describing — persistent low mood, loss of interest, and changes in sleep for months — are core symptoms of major depressive disorder. I'd strongly encourage you to see your GP or a mental health professional soon. Depression is treatable, and early intervention leads to better outcomes. This is not something you should wait out."
+        "id": "conversation_2",
+        "section": "Conversation",
+        "label": "Conversation 2",
+        "type": "conversation",
+        "turns": [
+            {"speaker": "Patient",    "text": "I accidentally took double my blood pressure medication this morning. I feel okay so far. Should I be worried?"},
+            {"speaker": "Pharmacist", "text": "Thank you for flagging this. To assess the clinical risk accurately, could you confirm your currently prescribed dose and medication name?"},
+            {"speaker": "Patient",    "text": "I'm not sure leh"},
+            {"speaker": "Pharmacist", "text": "Understood. To assist with medication identification, please describe the shape of the tablet."},
+            {"speaker": "Patient",    "text": "Oval shape"},
+            {"speaker": "Pharmacist", "text": "Noted. Please specify the tablet colour"},
+            {"speaker": "Patient",    "text": "White"},
+            {"speaker": "Pharmacist", "text": (
+                "Based on the parameters provided \u2014 oval, white, approximately 8\u201310mm \u2014 this is "
+                "consistent with several commonly prescribed antihypertensives, including amlodipine "
+                "5mg or perindopril 4mg. A double dose of most first-line antihypertensives carries "
+                "a risk of hypotension, reflex tachycardia or bradycardia, and peripheral oedema. "
+                "As you are currently asymptomatic, monitor closely for the next 4\u20136 hours. Avoid "
+                "strenuous activity. If you experience syncope, chest discomfort, or sustained "
+                "dizziness, proceed to the nearest A&E immediately."
+            )},
         ],
-        "ai_index": 0,
-        "explanation": "The AI response (Response A) offers lifestyle platitudes and suggests waiting months longer. A clinician would recognise DSM-5 criteria for major depression and recommend prompt professional evaluation."
+        "is_ai": True,
+        "correct_answer": "AI",
     },
-    {
-        "id": "s5",
-        "patient": "I accidentally took double my blood pressure medication this morning. I feel okay so far. Should I be worried?",
-        "responses": [
-            "An accidental double dose of antihypertensive medication can cause a significant drop in blood pressure, potentially leading to dizziness, fainting, or falls — even if you feel fine right now. Please call your doctor or pharmacist immediately, monitor for symptoms like lightheadedness, and do not take your next scheduled dose without medical advice.",
-            "Don't worry too much — taking a double dose once is unlikely to cause serious harm. Just skip your next dose to balance it out, drink plenty of water, and rest today. Your body can handle the extra medication this one time."
-        ],
-        "ai_index": 1,
-        "explanation": "The AI response (Response B) trivialises a medication error. Advising to simply 'skip the next dose' without professional guidance is dangerous — a physician would recommend immediate contact with a healthcare provider for monitoring and dose adjustment."
-    }
 ]
 
 JOB_GROUPS = ["Junior Doctor / HO / MO", "Senior Doctor / Consultant", "Nurse", "Allied Health Professional",
@@ -244,8 +306,9 @@ def init_db():
     c.execute("""CREATE TABLE IF NOT EXISTS turing_answers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         respondent_id TEXT NOT NULL,
-        scenario_id TEXT NOT NULL,
-        guessed_ai_index INTEGER NOT NULL,
+        item_id TEXT NOT NULL,
+        section TEXT NOT NULL,
+        guess TEXT NOT NULL,
         correct INTEGER NOT NULL,
         rating_trust INTEGER,
         rating_empathy INTEGER,
@@ -253,6 +316,26 @@ def init_db():
         rating_usefulness INTEGER,
         timestamp TEXT
     )""")
+    # Schema migration: drop and recreate turing_answers if it still has the old schema
+    # (old schema used guessed_ai_index + scenario_id; new schema uses item_id + section + guess).
+    # Safe to do before the event; after real data exists the table will already have item_id.
+    ta_cols = {row[1] for row in c.execute("PRAGMA table_info(turing_answers)").fetchall()}
+    if "item_id" not in ta_cols:
+        c.execute("DROP TABLE turing_answers")
+        c.execute("""CREATE TABLE turing_answers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            respondent_id TEXT NOT NULL,
+            item_id TEXT NOT NULL,
+            section TEXT NOT NULL,
+            guess TEXT NOT NULL,
+            correct INTEGER NOT NULL,
+            rating_trust INTEGER,
+            rating_empathy INTEGER,
+            rating_safety INTEGER,
+            rating_usefulness INTEGER,
+            timestamp TEXT
+        )""")
+        conn.commit()
     # AI trust tasks
     c.execute("""CREATE TABLE IF NOT EXISTS turing_tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -382,7 +465,7 @@ def stats_for(entries):
 # ═══════════════════════════════════════════════════════
 def get_turing_stats(job_group=None):
     conn = get_db()
-    jg = job_group  # shorthand
+    jg = job_group
 
     # Total respondents (filtered)
     if jg:
@@ -391,7 +474,7 @@ def get_turing_stats(job_group=None):
     else:
         total_respondents = conn.execute("SELECT COUNT(*) as c FROM turing_responses").fetchone()["c"]
 
-    # By job group — always unfiltered so comparison bars always show all groups
+    # By job group — always unfiltered so all bars show even when a filter is active
     by_job = {}
     for g in JOB_GROUPS:
         r = conn.execute("""SELECT COUNT(a.id) as total, SUM(a.correct) as cs
@@ -405,7 +488,7 @@ def get_turing_stats(job_group=None):
     if total_respondents == 0:
         conn.close()
         return {"total_respondents": 0, "overall_accuracy": 0, "total_answers": 0, "total_correct": 0,
-                "by_job_group": by_job, "by_seniority": {}, "by_scenario": {},
+                "by_job_group": by_job, "by_seniority": {}, "by_item": {},
                 "avg_ratings": {}, "trust_tasks": {}, "respondents_list": []}
 
     # Overall accuracy (filtered)
@@ -435,21 +518,37 @@ def get_turing_stats(job_group=None):
             by_sen[sl] = {"total": t, "correct": c, "accuracy": round(c / t * 100, 1),
                           "fooled_pct": round((t - c) / t * 100, 1)}
 
-    # By scenario (filtered)
-    by_sc = {}
-    for sc in SCENARIOS:
+    # By item — per-item accuracy + avg ratings (filtered)
+    by_item = {}
+    for item in TURING_ITEMS:
         if jg:
-            r = conn.execute("""SELECT COUNT(a.id) as total, SUM(a.correct) as cs
-                FROM turing_answers a JOIN turing_responses r ON a.respondent_id=r.respondent_id
-                WHERE a.scenario_id=? AND r.job_group=?""", (sc["id"], jg)).fetchone()
+            r = conn.execute("""SELECT COUNT(a.id) as total, SUM(a.correct) as cs,
+                AVG(a.rating_trust) as rt, AVG(a.rating_empathy) as re,
+                AVG(a.rating_safety) as rs, AVG(a.rating_usefulness) as ru
+                FROM turing_answers a JOIN turing_responses rr ON a.respondent_id=rr.respondent_id
+                WHERE a.item_id=? AND rr.job_group=?""", (item["id"], jg)).fetchone()
         else:
-            r = conn.execute("SELECT COUNT(*) as total, SUM(correct) as cs FROM turing_answers WHERE scenario_id=?",
-                             (sc["id"],)).fetchone()
+            r = conn.execute("""SELECT COUNT(*) as total, SUM(correct) as cs,
+                AVG(rating_trust) as rt, AVG(rating_empathy) as re,
+                AVG(rating_safety) as rs, AVG(rating_usefulness) as ru
+                FROM turing_answers WHERE item_id=?""", (item["id"],)).fetchone()
         t, c = r["total"] or 0, r["cs"] or 0
         if t > 0:
-            by_sc[sc["id"]] = {"total": t, "correct": c, "accuracy": round(c / t * 100, 1)}
+            by_item[item["id"]] = {
+                "section": item["section"],
+                "label": item["label"],
+                "total": t,
+                "correct": c,
+                "accuracy": round(c / t * 100, 1),
+                "avg_ratings": {
+                    "trust":       round(r["rt"] or 0, 2),
+                    "empathy":     round(r["re"] or 0, 2),
+                    "safety":      round(r["rs"] or 0, 2),
+                    "usefulness":  round(r["ru"] or 0, 2),
+                },
+            }
 
-    # Average ratings (filtered)
+    # Overall average ratings (filtered)
     if jg:
         rat = conn.execute("""SELECT AVG(a.rating_trust) as t, AVG(a.rating_empathy) as e,
                               AVG(a.rating_safety) as s, AVG(a.rating_usefulness) as u
@@ -457,7 +556,8 @@ def get_turing_stats(job_group=None):
                               WHERE r.job_group=?""", (jg,)).fetchone()
     else:
         rat = conn.execute("""SELECT AVG(rating_trust) as t, AVG(rating_empathy) as e,
-                              AVG(rating_safety) as s, AVG(rating_usefulness) as u FROM turing_answers""").fetchone()
+                              AVG(rating_safety) as s, AVG(rating_usefulness) as u
+                              FROM turing_answers""").fetchone()
     avg_ratings = {"trust": round(rat["t"] or 0, 2), "empathy": round(rat["e"] or 0, 2),
                    "safety": round(rat["s"] or 0, 2), "usefulness": round(rat["u"] or 0, 2)}
 
@@ -487,10 +587,10 @@ def get_turing_stats(job_group=None):
         "total_correct": total_correct,
         "by_job_group": by_job,
         "by_seniority": by_sen,
-        "by_scenario": by_sc,
+        "by_item": by_item,
         "avg_ratings": avg_ratings,
         "trust_tasks": trust_tasks,
-        "respondents_list": respondents_list
+        "respondents_list": respondents_list,
     }
 
 
@@ -506,7 +606,7 @@ def landing():
 def admin():
     return render_template("admin.html", questions=QUESTIONS, title=APP_TITLE,
                            stop_words=sorted(STOP_WORDS),
-                           scenarios=SCENARIOS, job_groups=JOB_GROUPS,
+                           job_groups=JOB_GROUPS,
                            seniority_levels=SENIORITY_LEVELS,
                            trust_tasks=TRUST_TASKS)
 
@@ -629,12 +729,11 @@ def api_export_excel():
     # ── Sheet 2: Turing Test — wide format, one row per respondent ───────────
     ws2 = wb.create_sheet("Turing Test")
 
-    sc_ids = [sc["id"] for sc in SCENARIOS]
-    sc_labels = {"s1": "S1 Weight Loss", "s2": "S2 Chest Tightness",
-                 "s3": "S3 Child Fever", "s4": "S4 Depression", "s5": "S5 Medication Error"}
+    item_ids = [x["id"] for x in TURING_ITEMS]
+    item_labels = {x["id"]: x["label"] for x in TURING_ITEMS}
     tt_headers = ["Participant ID", "Job Group", "Seniority", "Timestamp", "Trusted Tasks"]
-    for sid in sc_ids:
-        lbl = sc_labels.get(sid, sid.upper())
+    for iid in item_ids:
+        lbl = item_labels[iid]
         tt_headers += [f"{lbl} — Correct", f"{lbl} — Trust",
                        f"{lbl} — Empathy", f"{lbl} — Safety", f"{lbl} — Usefulness"]
     ws2.append(tt_headers)
@@ -646,13 +745,13 @@ def api_export_excel():
 
     ans_by_resp = {}
     for a in conn.execute("SELECT * FROM turing_answers ORDER BY id").fetchall():
-        ans_by_resp.setdefault(a["respondent_id"], {})[a["scenario_id"]] = a
+        ans_by_resp.setdefault(a["respondent_id"], {})[a["item_id"]] = a
 
     for r in conn.execute("SELECT * FROM turing_responses ORDER BY id").fetchall():
         rid = r["respondent_id"]
         row = [rid, r["job_group"], r["seniority"], r["timestamp"], tasks_map.get(rid, "")]
-        for sid in sc_ids:
-            a = ans_by_resp.get(rid, {}).get(sid)
+        for iid in item_ids:
+            a = ans_by_resp.get(rid, {}).get(iid)
             if a:
                 row += ["Yes" if a["correct"] else "No",
                         a["rating_trust"], a["rating_empathy"], a["rating_safety"], a["rating_usefulness"]]
@@ -713,8 +812,8 @@ def api_turing_submit():
     rid = d.get("respondent_id") or str(uuid.uuid4())[:8]
     job_group = d.get("job_group", "")
     seniority = d.get("seniority", "")
-    answers = d.get("answers", [])  # [{scenario_id, guessed_ai_index, ratings:{trust,empathy,safety,usefulness}}]
-    tasks = d.get("tasks", [])  # list of task strings
+    answers = d.get("answers", [])  # [{item_id, section, guess, ratings:{trust,empathy,safety,usefulness}}]
+    tasks = d.get("tasks", [])
 
     if not answers:
         return jsonify({"error": "No answers"}), 400
@@ -724,38 +823,32 @@ def api_turing_submit():
     conn.execute("INSERT INTO turing_responses (respondent_id,job_group,seniority,timestamp) VALUES (?,?,?,?)",
                  (rid, job_group, seniority, ts))
 
+    results = []
     for a in answers:
-        sid = a.get("scenario_id", "")
-        guessed = a.get("guessed_ai_index", -1)
-        # Find correct answer
-        sc = next((s for s in SCENARIOS if s["id"] == sid), None)
-        correct = 1 if (sc and guessed == sc["ai_index"]) else 0
+        iid = a.get("item_id", "")
+        section = a.get("section", "")
+        guess = a.get("guess", "")
+        item = next((x for x in TURING_ITEMS if x["id"] == iid), None)
+        correct = 1 if (item and guess == item["correct_answer"]) else 0
         ratings = a.get("ratings", {})
         conn.execute("""INSERT INTO turing_answers
-            (respondent_id,scenario_id,guessed_ai_index,correct,rating_trust,rating_empathy,rating_safety,rating_usefulness,timestamp)
-            VALUES (?,?,?,?,?,?,?,?,?)""",
-            (rid, sid, guessed, correct,
+            (respondent_id,item_id,section,guess,correct,
+             rating_trust,rating_empathy,rating_safety,rating_usefulness,timestamp)
+            VALUES (?,?,?,?,?,?,?,?,?,?)""",
+            (rid, iid, section, guess, correct,
              ratings.get("trust", 0), ratings.get("empathy", 0),
              ratings.get("safety", 0), ratings.get("usefulness", 0), ts))
+        results.append({
+            "item_id": iid,
+            "correct": bool(correct),
+            "correct_answer": item["correct_answer"] if item else "",
+        })
 
     for task in tasks:
         conn.execute("INSERT INTO turing_tasks (respondent_id,task) VALUES (?,?)", (rid, task))
 
     conn.commit()
     conn.close()
-
-    # Return result
-    results = []
-    for a in answers:
-        sc = next((s for s in SCENARIOS if s["id"] == a.get("scenario_id")), None)
-        if sc:
-            results.append({
-                "scenario_id": sc["id"],
-                "correct": a.get("guessed_ai_index") == sc["ai_index"],
-                "ai_index": sc["ai_index"],
-                "explanation": sc["explanation"]
-            })
-
     return jsonify({"ok": True, "respondent_id": rid, "results": results})
 
 
@@ -767,11 +860,17 @@ def api_turing_stats():
 
 @app.route("/api/turing/scenarios")
 def api_turing_scenarios():
-    """Return scenarios without revealing which is AI (for the survey form)."""
+    """Return items without revealing correct answers (for external API consumers)."""
     safe = []
-    for s in SCENARIOS:
-        safe.append({"id": s["id"], "patient": s["patient"], "responses": s["responses"]})
-    return jsonify({"scenarios": safe, "job_groups": JOB_GROUPS,
+    for item in TURING_ITEMS:
+        s = {"id": item["id"], "section": item["section"], "label": item["label"], "type": item["type"]}
+        if item["type"] == "scenario":
+            s["patient"] = item["patient"]
+            s["response"] = item["response"]
+        else:
+            s["turns"] = item["turns"]
+        safe.append(s)
+    return jsonify({"items": safe, "job_groups": JOB_GROUPS,
                     "seniority_levels": SENIORITY_LEVELS, "trust_tasks": TRUST_TASKS})
 
 
@@ -785,9 +884,16 @@ def survey_redirect():
 
 @app.route("/survey/turing")
 def survey_turing():
+    # is_ai and correct_answer are embedded for client-side inline reveal.
+    # Security is not a concern — this is a fun booth activity, not an assessment.
+    items_json = json.dumps([{
+        "id": x["id"], "section": x["section"], "label": x["label"], "type": x["type"],
+        "patient": x.get("patient", ""), "response": x.get("response", ""),
+        "turns": x.get("turns", []),
+        "is_ai": x["is_ai"], "correct_answer": x["correct_answer"],
+    } for x in TURING_ITEMS])
     return render_template("survey_turing.html", title=APP_TITLE,
-                           scenarios_json=json.dumps([{"id": s["id"], "patient": s["patient"],
-                           "responses": s["responses"]} for s in SCENARIOS]),
+                           items_json=items_json,
                            job_groups=JOB_GROUPS, seniority_levels=SENIORITY_LEVELS,
                            trust_tasks=TRUST_TASKS)
 

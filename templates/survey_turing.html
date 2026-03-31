@@ -17,11 +17,14 @@
 .card h3{font-size:.72rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--pk);margin-bottom:10px}
 .card h4{font-size:.82rem;font-weight:500;margin-bottom:8px;color:var(--t2)}
 .patient-box{padding:12px;border-radius:var(--rs);background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(6,182,212,.06));border:1px solid rgba(59,130,246,.15);font-size:.88rem;line-height:1.6;margin-bottom:12px}
-.patient-box .icon{font-size:1.2rem;margin-right:6px}
-.resp-option{padding:12px;border-radius:var(--rs);border:2px solid var(--bd);background:var(--c2);cursor:pointer;margin-bottom:8px;font-size:.84rem;line-height:1.5;transition:.2s}
-.resp-option:hover{border-color:var(--bl)}
-.resp-option.sel{border-color:var(--pk);background:rgba(236,72,153,.08)}
-.resp-option .tag{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--t3);display:block;margin-bottom:4px}
+.patient-box .lbl{font-size:.65rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);display:block;margin-bottom:5px}
+.response-box{padding:12px;border-radius:var(--rs);background:rgba(168,85,247,.04);border:1px solid rgba(168,85,247,.15);font-size:.86rem;line-height:1.65;margin-bottom:12px}
+.response-box .lbl{font-size:.65rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);display:block;margin-bottom:5px}
+
+/* guess buttons */
+.guess-group{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.guess-opt{padding:14px 10px;border-radius:var(--rs);border:2px solid var(--bd);background:var(--c2);cursor:pointer;font-size:.84rem;font-weight:600;text-align:center;transition:.2s;line-height:1.3}
+.guess-opt:hover{border-color:var(--bl)}.guess-opt.sel{border-color:var(--pk);background:rgba(236,72,153,.08)}
 
 /* ratings */
 .rating-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -49,13 +52,38 @@
 .pdot{width:8px;height:8px;border-radius:50%;background:var(--bd)}
 .pdot.on{background:var(--pk)}.pdot.done{background:var(--gn)}
 
+/* consent screen */
+.consent-item{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--bd)}
+.consent-item:last-child{border-bottom:none;padding-bottom:0}
+.consent-icon{font-size:1.35rem;flex-shrink:0;margin-top:1px}
+.consent-text{font-size:.84rem;color:var(--t2);line-height:1.55}
+.consent-text strong{color:var(--t1)}
+
+/* conversation chat */
+.chat-thread{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.chat-msg{max-width:88%;padding:9px 13px;border-radius:12px;font-size:.84rem;line-height:1.55}
+.chat-msg.patient{align-self:flex-start;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.15)}
+.chat-msg.clinician{align-self:flex-end;background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.15)}
+.chat-speaker{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--t3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em}
+
+/* reveal banner */
+.reveal-banner{padding:18px 16px;border-radius:var(--r);margin-bottom:14px;text-align:center}
+.reveal-banner.correct{background:rgba(34,197,94,.08);border:2px solid rgba(34,197,94,.4)}
+.reveal-banner.wrong{background:rgba(239,68,68,.08);border:2px solid rgba(239,68,68,.35)}
+.reveal-icon{font-size:2.2rem;margin-bottom:6px}
+.reveal-title{font-size:1rem;font-weight:700;margin-bottom:4px}
+.reveal-title.correct{color:var(--gn)}.reveal-title.wrong{color:var(--rd)}
+.reveal-answer{font-size:.82rem;color:var(--t2);line-height:1.5}
+
+/* section divider in item steps */
+.section-note{font-size:.72rem;color:var(--t3);background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.15);border-radius:var(--rs);padding:8px 12px;margin-bottom:12px;line-height:1.5}
+
 /* results */
 .result-card{border-radius:var(--r);border:1px solid var(--bd);background:var(--c1);padding:14px;margin-bottom:10px}
 .result-card.correct{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.05)}
 .result-card.wrong{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05)}
 .result-badge{font-family:'Space Mono',monospace;font-size:.65rem;padding:3px 8px;border-radius:10px;display:inline-block;margin-bottom:6px}
 .result-badge.correct{background:rgba(34,197,94,.15);color:var(--gn)}.result-badge.wrong{background:rgba(239,68,68,.15);color:var(--rd)}
-.result-exp{font-size:.78rem;color:var(--t2);line-height:1.5;margin-top:6px}
 
 .score-hero{text-align:center;padding:20px;margin-bottom:16px}
 .score-hero .big{font-size:3rem;font-weight:700;background:linear-gradient(135deg,var(--pk),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -64,14 +92,13 @@
 /* ── Mobile ── */
 @media(max-width:480px){
   .wrap{padding:12px}
-  /* Stack rating label above stars so they never overflow */
   .rating-row{flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:14px}
   .rating-label{width:auto;font-size:.8rem}
-  /* Larger tap targets for stars */
   .star{width:42px;height:42px;font-size:.95rem}
-  /* Tighten card padding */
   .card{padding:14px}
-  .patient-box{font-size:.84rem}
+  .patient-box,.response-box{font-size:.84rem}
+  .guess-group{grid-template-columns:1fr 1fr}
+  .guess-opt{font-size:.8rem;padding:12px 8px}
 }
 </style></head><body>
 <div class="wrap">
@@ -80,14 +107,38 @@
     <img src="/static/HCRD.png" alt="HCRD" style="height:45px;width:auto">
   </div>
   <h1>🤖 AI vs Human — Can You Tell?</h1>
-  <p>Read each patient scenario, then guess which response was written by AI</p>
-  <p style="font-size:.68rem;color:var(--t3);margin-top:4px">NUH AI Summit &middot; 2026</p>
+  <p>Read each case, then decide: Human Clinician or AI?</p>
+  <p style="font-size:.68rem;color:var(--t3);margin-top:4px">NUHS Summit &middot; 2026</p>
 </div>
 
 <div class="progress" id="progress"></div>
 
-<!-- Step 0: Demographics -->
-<div class="step on" id="step_demo">
+<!-- Step 0: Consent / Intro -->
+<div class="step on" id="step_consent">
+  <div class="card">
+    <h3>Before You Begin</h3>
+    <div class="consent-item">
+      <div class="consent-icon">🔒</div>
+      <div class="consent-text"><strong>Fully anonymised.</strong> No unique identifiers are collected. Your responses cannot be traced back to you.</div>
+    </div>
+    <div class="consent-item">
+      <div class="consent-icon">📋</div>
+      <div class="consent-text"><strong>Research consent.</strong> By proceeding, you consent to your responses being used for research purposes.</div>
+    </div>
+    <div class="consent-item">
+      <div class="consent-icon">😄</div>
+      <div class="consent-text"><strong>Light-hearted activity.</strong> This is a fun, low-stakes challenge — there are no wrong answers to worry about!</div>
+    </div>
+    <div class="consent-item">
+      <div class="consent-icon">🧪</div>
+      <div class="consent-text"><strong>What to expect.</strong> You will read clinical scenarios and conversations, then decide whether the response was written by a <strong>Human Clinician</strong> or generated by an <strong>AI</strong>.</div>
+    </div>
+  </div>
+  <button class="btn bp" onclick="goToStep(1)">Continue →</button>
+</div>
+
+<!-- Step 1: Demographics -->
+<div class="step" id="step_demo">
   <div class="card">
     <h3>About You</h3>
     <div class="sel-group"><label>Your Role / Job Group</label><div id="jg_opts"></div>
@@ -95,13 +146,13 @@
     </div>
     <div class="sel-group"><label>Seniority Level</label><div id="sn_opts"></div></div>
   </div>
-  <button class="btn bp" onclick="startScenarios()">Start Survey →</button>
+  <button class="btn bp" onclick="startSurvey()">Start Survey →</button>
 </div>
 
-<!-- Steps 1–5: Scenarios (generated by JS) -->
-<div id="scenario_steps"></div>
+<!-- Steps 2–6: Items (generated by JS) -->
+<div id="item_steps"></div>
 
-<!-- Final: Tasks + Submit -->
+<!-- Step 7: Tasks -->
 <div class="step" id="step_tasks">
   <div class="card">
     <h3>One Last Question</h3>
@@ -112,7 +163,7 @@
   <button class="btn bp" onclick="submitAll()">Submit All →</button>
 </div>
 
-<!-- Results -->
+<!-- Step 8: Results -->
 <div class="step" id="step_results">
   <div class="score-hero" id="scoreHero"></div>
   <div id="resultCards"></div>
@@ -124,20 +175,28 @@
 </div>
 
 <script>
-const SCENARIOS={{scenarios_json|safe}};
+const ITEMS={{items_json|safe}};
 const JOB_GROUPS={{job_groups|tojson}};
 const SENIORITY={{seniority_levels|tojson}};
 const TASKS={{trust_tasks|tojson}};
 
 let selJobGroup='',selSeniority='';
-let answers={}; // {scenario_id:{guessed_ai_index, ratings:{trust,empathy,safety,usefulness}}}
+let answers={}; // item_id → {guess, ratings:{trust,empathy,safety,usefulness}}
 let selTasks=new Set();
 let currentStep=0;
-const totalSteps=SCENARIOS.length+2; // demo + scenarios + tasks
+// consent(0) + demo(1) + items(2..N+1) + tasks(N+2) + results(N+3)  →  N+4 total
+const totalSteps=ITEMS.length+4;
 
 function $(id){return document.getElementById(id)}
 
-// Build progress dots
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatText(s){
+  return escHtml(s).replace(/\n/g,'<br>');
+}
+
+// ── Progress dots ──────────────────────────────────────
 function updateProgress(){
   let h='';for(let i=0;i<totalSteps;i++){
     let cls=i<currentStep?'done':i===currentStep?'on':'';
@@ -145,12 +204,23 @@ function updateProgress(){
   }$('progress').innerHTML=h;
 }
 
-// Build demographics
-function buildDemo(){
-  let jh='';JOB_GROUPS.forEach(g=>{jh+=`<div class="sel-opt" onclick="pickJG(this,'${g}')">${g}</div>`});$('jg_opts').innerHTML=jh;
-  let sh='';SENIORITY.forEach(s=>{sh+=`<div class="sel-opt" onclick="pickSN(this,'${s}')">${s}</div>`});$('sn_opts').innerHTML=sh;
+// ── Navigation ─────────────────────────────────────────
+function goToStep(n){
+  currentStep=n;
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
+  if(n===0)$('step_consent').classList.add('on');
+  else if(n===1)$('step_demo').classList.add('on');
+  else if(n>=2&&n<=ITEMS.length+1)$(`step_item_${n-2}`).classList.add('on');
+  else if(n===ITEMS.length+2)$('step_tasks').classList.add('on');
+  else $('step_results').classList.add('on');
+  updateProgress();window.scrollTo(0,0);
 }
 
+// ── Demographics ───────────────────────────────────────
+function buildDemo(){
+  let jh='';JOB_GROUPS.forEach(g=>{jh+=`<div class="sel-opt" onclick="pickJG(this,'${escHtml(g)}')">${escHtml(g)}</div>`});$('jg_opts').innerHTML=jh;
+  let sh='';SENIORITY.forEach(s=>{sh+=`<div class="sel-opt" onclick="pickSN(this,'${escHtml(s)}')">${escHtml(s)}</div>`});$('sn_opts').innerHTML=sh;
+}
 function pickJG(el,v){
   selJobGroup=v;
   document.querySelectorAll('#jg_opts .sel-opt').forEach(e=>e.classList.remove('sel'));
@@ -164,113 +234,169 @@ function onOtherInput(inp){
   selJobGroup=txt?'Other; '+txt:'Other';
 }
 function pickSN(el,v){selSeniority=v;document.querySelectorAll('#sn_opts .sel-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel')}
-
-// Build scenario steps
-function buildScenarios(){
-  let h='';SCENARIOS.forEach((sc,i)=>{
-    h+=`<div class="step" id="step_sc_${i}">
-      <div class="card"><h3>Scenario ${i+1} of ${SCENARIOS.length}</h3>
-        <div class="patient-box"><span class="icon">🗣️</span> <strong>Patient says:</strong><br>${sc.patient}</div>
-        <h4>Which response was written by AI?</h4>
-        <div class="resp-option" id="sc${i}_r0" onclick="pickResp(${i},0)"><span class="tag">Response A</span>${sc.responses[0]}</div>
-        <div class="resp-option" id="sc${i}_r1" onclick="pickResp(${i},1)"><span class="tag">Response B</span>${sc.responses[1]}</div>
-      </div>
-      <div class="card" id="sc${i}_ratings" style="display:none">
-        <h3>Rate the AI Response</h3>
-        <p style="font-size:.72rem;color:var(--t3);margin-bottom:10px">Rate the response you identified as AI (1 = very poor, 5 = excellent)</p>
-        <div class="rating-row"><span class="rating-label">Trust</span><div class="stars" id="sc${i}_trust">${makeStars(i,'trust')}</div></div>
-        <div class="rating-row"><span class="rating-label">Empathy</span><div class="stars" id="sc${i}_empathy">${makeStars(i,'empathy')}</div></div>
-        <div class="rating-row"><span class="rating-label">Safety</span><div class="stars" id="sc${i}_safety">${makeStars(i,'safety')}</div></div>
-        <div class="rating-row"><span class="rating-label">Usefulness</span><div class="stars" id="sc${i}_usefulness">${makeStars(i,'usefulness')}</div></div>
-      </div>
-      <button class="btn bp" onclick="nextScenario(${i})">Next →</button>
-    </div>`;
-  });
-  $('scenario_steps').innerHTML=h;
-}
-
-function makeStars(scIdx,dim){
-  let h='';for(let s=1;s<=5;s++){h+=`<div class="star" onclick="rate(${scIdx},'${dim}',${s},this)">${s}</div>`}return h;
-}
-
-function pickResp(scIdx,rIdx){
-  document.querySelectorAll(`#step_sc_${scIdx} .resp-option`).forEach(e=>e.classList.remove('sel'));
-  $(`sc${scIdx}_r${rIdx}`).classList.add('sel');
-  let sid=SCENARIOS[scIdx].id;
-  if(!answers[sid])answers[sid]={guessed_ai_index:rIdx,ratings:{trust:3,empathy:3,safety:3,usefulness:3}};
-  else answers[sid].guessed_ai_index=rIdx;
-  $(`sc${scIdx}_ratings`).style.display='block';
-}
-
-function rate(scIdx,dim,val,el){
-  let sid=SCENARIOS[scIdx].id;
-  if(!answers[sid])return;
-  answers[sid].ratings[dim]=val;
-  el.parentElement.querySelectorAll('.star').forEach((s,i)=>{s.classList.toggle('on',i<val)});
-}
-
-function goToStep(n){
-  currentStep=n;
-  document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
-  if(n===0)$('step_demo').classList.add('on');
-  else if(n<=SCENARIOS.length)$(`step_sc_${n-1}`).classList.add('on');
-  else if(n===SCENARIOS.length+1)$('step_tasks').classList.add('on');
-  else $('step_results').classList.add('on');
-  updateProgress();window.scrollTo(0,0);
-}
-
-function startScenarios(){
+function startSurvey(){
   if(!selJobGroup||!selSeniority){alert('Please select your role and seniority level');return}
   let inp=$('jg_other_input');
   if(inp.style.display!=='none'&&!inp.value.trim()){alert('Please specify your role in the text field');inp.focus();return}
-  goToStep(1);
+  goToStep(2);
 }
 
-function nextScenario(scIdx){
-  let sid=SCENARIOS[scIdx].id;
-  if(!answers[sid]){alert('Please select which response you think is AI');return}
-  goToStep(scIdx+2);
+// ── Build item steps ───────────────────────────────────
+function buildItems(){
+  let scCount=0,cvCount=0;
+  let scTotal=ITEMS.filter(x=>x.section==='Scenario').length;
+  let cvTotal=ITEMS.filter(x=>x.section==='Conversation').length;
+  let h='';
+
+  ITEMS.forEach((item,i)=>{
+    let stepN=i+2;
+    let sectionIdx,sectionTotal,sectionLabel;
+    if(item.section==='Scenario'){scCount++;sectionIdx=scCount;sectionTotal=scTotal;sectionLabel='Scenario';}
+    else{cvCount++;sectionIdx=cvCount;sectionTotal=cvTotal;sectionLabel='Conversation';}
+
+    // ── Content card ──
+    let contentHtml='';
+    if(item.type==='scenario'){
+      contentHtml=`
+        <div class="patient-box"><span class="lbl">Patient's query</span>${formatText(item.patient)}</div>
+        <div class="response-box"><span class="lbl">Clinician / AI response</span>${formatText(item.response)}</div>`;
+    }else{
+      // Identify the clinician role name (first non-Patient speaker)
+      let clinRole=item.turns.find(t=>t.speaker!=='Patient')?.speaker||'Clinician';
+      let turnsHtml=item.turns.map(t=>{
+        let isClin=t.speaker!=='Patient';
+        return `<div class="chat-msg ${isClin?'clinician':'patient'}"><span class="chat-speaker">${escHtml(t.speaker)}</span>${formatText(t.text)}</div>`;
+      }).join('');
+      contentHtml=`
+        <div class="section-note">👇 Read the conversation. Your task is to decide whether the <strong>${escHtml(clinRole)}</strong> is a <strong>Human Clinician</strong> or an <strong>AI</strong>.</div>
+        <div class="chat-thread">${turnsHtml}</div>`;
+    }
+
+    // ── Guess prompt text ──
+    let guessPrompt=item.type==='scenario'
+      ?'Was this response written by a <strong>Human Clinician</strong> or an <strong>AI</strong>?'
+      :`Was the <strong>${escHtml(item.turns.find(t=>t.speaker!=='Patient')?.speaker||'Clinician')}</strong> in this conversation a <strong>Human Clinician</strong> or an <strong>AI</strong>?`;
+
+    h+=`<div class="step" id="step_item_${i}">
+      <div class="card">
+        <h3>${sectionLabel} ${sectionIdx} of ${sectionTotal}</h3>
+        ${contentHtml}
+      </div>
+      <div id="item${i}_answer_phase">
+        <div class="card">
+          <h3>Your Guess</h3>
+          <p style="font-size:.82rem;color:var(--t2);margin-bottom:10px">${guessPrompt}</p>
+          <div class="guess-group">
+            <div class="guess-opt" id="item${i}_g_human" onclick="selectGuess(${i},'Human Clinician',this)">👨‍⚕️ Human Clinician</div>
+            <div class="guess-opt" id="item${i}_g_ai" onclick="selectGuess(${i},'AI',this)">🤖 AI</div>
+          </div>
+        </div>
+        <div class="card" id="item${i}_ratings" style="display:none">
+          <h3>Rate the quality of this response</h3>
+          <p style="font-size:.72rem;color:var(--t3);margin-bottom:10px">1 = very poor &nbsp;·&nbsp; 5 = excellent</p>
+          <div class="rating-row"><span class="rating-label">Trust</span><div class="stars" id="item${i}_trust">${makeStars(i,'trust')}</div></div>
+          <div class="rating-row"><span class="rating-label">Empathy</span><div class="stars" id="item${i}_empathy">${makeStars(i,'empathy')}</div></div>
+          <div class="rating-row"><span class="rating-label">Safety</span><div class="stars" id="item${i}_safety">${makeStars(i,'safety')}</div></div>
+          <div class="rating-row"><span class="rating-label">Usefulness</span><div class="stars" id="item${i}_usefulness">${makeStars(i,'usefulness')}</div></div>
+        </div>
+        <button class="btn bp" id="item${i}_submit_btn" onclick="submitItem(${i})">Submit Answer →</button>
+      </div>
+      <div id="item${i}_reveal_phase" style="display:none">
+        <div id="item${i}_reveal_banner"></div>
+        <button class="btn bp" onclick="goToStep(${stepN+1})">Continue →</button>
+      </div>
+    </div>`;
+  });
+  $('item_steps').innerHTML=h;
 }
 
-// Build task checkboxes
+function makeStars(itemIdx,dim){
+  let h='';for(let s=1;s<=5;s++){h+=`<div class="star" onclick="rateItem(${itemIdx},'${dim}',${s},this)">${s}</div>`}return h;
+}
+
+// ── Guess + ratings ────────────────────────────────────
+function selectGuess(itemIdx,value,el){
+  let iid=ITEMS[itemIdx].id;
+  document.querySelectorAll(`#step_item_${itemIdx} .guess-opt`).forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  if(!answers[iid])answers[iid]={guess:value,ratings:{trust:3,empathy:3,safety:3,usefulness:3}};
+  else answers[iid].guess=value;
+  $(`item${itemIdx}_ratings`).style.display='block';
+}
+
+function rateItem(itemIdx,dim,val,el){
+  let iid=ITEMS[itemIdx].id;
+  if(!answers[iid])answers[iid]={guess:null,ratings:{trust:3,empathy:3,safety:3,usefulness:3}};
+  answers[iid].ratings[dim]=val;
+  el.parentElement.querySelectorAll('.star').forEach((s,i)=>{s.classList.toggle('on',i<val)});
+}
+
+// ── Inline reveal ──────────────────────────────────────
+function submitItem(itemIdx){
+  let iid=ITEMS[itemIdx].id;
+  if(!answers[iid]||!answers[iid].guess){alert('Please select Human Clinician or AI before submitting');return}
+  let item=ITEMS[itemIdx];
+  let isCorrect=answers[iid].guess===item.correct_answer;
+  let bannerCls=isCorrect?'correct':'wrong';
+  let icon=isCorrect?'✅':'❌';
+  let title=isCorrect?'Correct!':'Not quite!';
+  let detail=`The correct answer is: <strong>${escHtml(item.correct_answer)}</strong>`;
+  $(`item${itemIdx}_reveal_banner`).innerHTML=`
+    <div class="reveal-banner ${bannerCls}">
+      <div class="reveal-icon">${icon}</div>
+      <div class="reveal-title ${bannerCls}">${title}</div>
+      <div class="reveal-answer">${detail}</div>
+    </div>`;
+  $(`item${itemIdx}_answer_phase`).style.display='none';
+  $(`item${itemIdx}_reveal_phase`).style.display='block';
+  window.scrollTo(0,0);
+}
+
+// ── Tasks ──────────────────────────────────────────────
 function buildTasks(){
-  let h='';TASKS.forEach(t=>{h+=`<div class="chk" onclick="toggleTask(this,'${t}')">${t}</div>`});$('task_checks').innerHTML=h;
+  let h='';TASKS.forEach(t=>{h+=`<div class="chk" onclick="toggleTask(this,'${escHtml(t)}')">${escHtml(t)}</div>`});$('task_checks').innerHTML=h;
 }
-
 function toggleTask(el,t){el.classList.toggle('sel');if(selTasks.has(t))selTasks.delete(t);else selTasks.add(t)}
 
+// ── Submit + results ───────────────────────────────────
 async function submitAll(){
   let payload={
     job_group:selJobGroup,seniority:selSeniority,
-    answers:Object.entries(answers).map(([sid,a])=>({scenario_id:sid,guessed_ai_index:a.guessed_ai_index,ratings:a.ratings})),
+    answers:ITEMS.map(item=>{
+      let a=answers[item.id]||{guess:'',ratings:{trust:3,empathy:3,safety:3,usefulness:3}};
+      return{item_id:item.id,section:item.section,guess:a.guess||'',ratings:a.ratings};
+    }),
     tasks:[...selTasks]
   };
   try{
     let res=await(await fetch('/api/turing/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})).json();
-    if(res.ok)showResults(res.results);
-    else alert('Error submitting');
-  }catch(e){alert('Network error');console.error(e)}
+    if(res.ok)buildResults();
+    else alert('Error submitting. Please try again.');
+  }catch(e){alert('Network error. Please try again.');console.error(e)}
 }
 
-function showResults(results){
-  let correct=results.filter(r=>r.correct).length;
-  let total=results.length;
-  let pct=Math.round(correct/total*100);
-  let emoji=pct>=80?'🎉':pct>=60?'👍':pct>=40?'🤔':'😱';
-  $('scoreHero').innerHTML=`<div class="big">${emoji} ${correct}/${total}</div><div class="sub">You correctly identified ${correct} out of ${total} AI responses (${pct}%)</div>`;
-
-  let h='';results.forEach((r,i)=>{
-    let ok=r.correct;
+function buildResults(){
+  let correct=0,total=ITEMS.length;
+  let h='';
+  ITEMS.forEach((item,i)=>{
+    let a=answers[item.id];
+    let ok=a&&a.guess===item.correct_answer;
+    if(ok)correct++;
+    let roleLabel=item.type==='conversation'
+      ?`The clinician was: <strong>${escHtml(item.correct_answer)}</strong>`
+      :`The response was written by: <strong>${escHtml(item.correct_answer)}</strong>`;
     h+=`<div class="result-card ${ok?'correct':'wrong'}">
       <span class="result-badge ${ok?'correct':'wrong'}">${ok?'✓ Correct':'✗ Incorrect'}</span>
-      <strong style="font-size:.82rem"> Scenario ${i+1}</strong>
-      <div style="font-size:.72rem;color:var(--t3);margin-top:3px">AI was Response ${r.ai_index===0?'A':'B'}</div>
-      <div class="result-exp">${r.explanation}</div>
+      <strong style="font-size:.82rem"> ${escHtml(item.label)}</strong>
+      <div style="font-size:.72rem;color:var(--t3);margin-top:3px">${roleLabel}</div>
     </div>`;
   });
+  let pct=Math.round(correct/total*100);
+  let emoji=pct>=80?'🎉':pct>=60?'👍':pct>=40?'🤔':'😱';
+  $('scoreHero').innerHTML=`<div class="big">${emoji} ${correct}/${total}</div><div class="sub">You correctly identified ${correct} out of ${total} (${pct}%)</div>`;
   $('resultCards').innerHTML=h;
-  goToStep(totalSteps);
+  goToStep(totalSteps-1);
 }
 
-buildDemo();buildScenarios();buildTasks();updateProgress();
+buildDemo();buildItems();buildTasks();updateProgress();
 </script></body></html>

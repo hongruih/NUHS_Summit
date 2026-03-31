@@ -52,8 +52,8 @@ Environment variables (copy `.env.example` to `.env` for local dev):
 **Data persistence**: SQLite via `booth_data.db` (path overridable via `DATABASE_PATH` env var; auto-created on startup by `init_db()`). WAL mode enabled (`PRAGMA journal_mode=WAL`) for concurrent read performance under Gunicorn.
 
 **Key in-file sections** (separated by banner comments):
-- Lines ~47–128: Configuration — `QUESTIONS` (4 open-ended questions), `STOP_WORDS`, `SCENARIOS` (5 Turing test clinical cases), `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`, `ACCEPTANCE_PART_A`, `ACCEPTANCE_LIKERT` (41 Likert questions across Parts B–F)
-- Lines ~134–299: Database setup (`get_db`, `init_db`) — creates 5 tables: `sentiment_responses`, `turing_responses`, `turing_answers`, `turing_tasks`, `acceptance_responses`; also runs a safe `ALTER TABLE` migration to add `participant_id` to `sentiment_responses`
+- Lines ~47–128: Configuration — `QUESTIONS` (4 open-ended questions), `STOP_WORDS`, `SCENARIOS` (5 Turing test clinical cases), `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS`, `ACCEPTANCE_PART_A` (8 fields: age group, gender, cluster, disciplines, years in healthcare, years in role, AI frequency, AI tools — seniority is dynamic in the template), `ACCEPTANCE_LIKERT` (22 Likert questions across Parts B–D with `[discipline]` placeholder substituted client-side)
+- Lines ~134–299: Database setup (`get_db`, `init_db`) — creates 5 tables: `sentiment_responses`, `turing_responses`, `turing_answers`, `turing_tasks`, `acceptance_responses`; runs safe `ALTER TABLE` migrations to add `participant_id` to `sentiment_responses`, and `cluster` + `open_reflection` to `acceptance_responses`
 - Lines ~301–457: Business logic — `sentiment()` (TextBlob polarity/subjectivity), `extract_words()` (spaCy lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words + `better-profanity` filter → top 80 words; falls back to regex Counter if spaCy unavailable, profanity filter applies in both paths), `get_turing_stats()` (full analytics with optional job-group filter)
 - Lines ~460–887: Flask routes — participant pages, admin, all API endpoints, Excel export
 
@@ -62,7 +62,7 @@ Environment variables (copy `.env.example` to `.env` for local dev):
 - `admin.html` — 7-tab admin dashboard (rendered at `/admin`); status bar at top shows Total / AI vs Human / AI Perspectives / AI Acceptance counts; tabs split into left group (Live Overview, Q1–Q3 Input) and right group (AI vs Human, AI Perspectives, AI Acceptance) separated by `margin-left:auto` on the `.tab.tt` class
 - `survey_turing.html` — mobile Turing test survey (rendered at `/survey/turing`); "Other" job group selection reveals an inline free-text input; combined value saved as `"Other; <custom text>"`
 - `survey_sentiment.html` — sentiment survey with microphone + text input (rendered at `/survey/sentiment`); polarity score is calculated and stored but **not displayed** to participants — only the sentiment label (Positive/Neutral/Negative) and polarity bar are shown
-- `survey_acceptance.html` — AI acceptance survey (rendered at `/survey/acceptance`); first screen is a consent/intro step (anonymous notice + HCRD research consent); clicking "Begin Survey" proceeds to the 13-step question flow (8 Part A biographical + 5 Likert parts B–F); completion screen shows a gift booth message ("show this page at the Healthcare Redesign booth") with confetti animation; Part A Q3 (discipline) is single-select — selecting "Other" reveals an inline free-text input; stored as `"Other; <role>"` in the `disciplines` JSON array
+- `survey_acceptance.html` — AI acceptance survey (rendered at `/survey/acceptance`); first screen is a consent/intro step (anonymous notice + HCRD research consent); clicking "Begin Survey" proceeds to the 13-step question flow (9 Part A biographical + 3 Likert parts B–D + 1 Part G open reflection); completion screen shows a gift booth message with confetti animation; Part A has two free-text-revealing fields: cluster ("Others") and discipline ("Other"); seniority options (Q5) are dynamic — rendered from a JS `SENIORITY_BY_DISCIPLINE` lookup map keyed by the selected discipline; Likert questions containing `[discipline]` are substituted client-side via `applyDisciplineWord()` using the respondent's chosen discipline; Part G has 4 optional open-ended textarea questions
 
 **Design system**: All templates use a Google-inspired light theme — white (`#ffffff`) / light grey (`#f1f3f4`) backgrounds, `#202124` primary text, `#5f6368` secondary text, `#dadce0` borders. Accent colours (indigo `#4f46e5`/`#6366f1`, pink `#ec4899`, purple `#a855f7`, cyan `#06b6d4`) are used for buttons, highlights, and gradients. Do not introduce dark backgrounds or light-on-dark text.
 
@@ -83,7 +83,7 @@ Environment variables (copy `.env.example` to `.env` for local dev):
 | `POST /api/turing/submit` | Submit a completed Turing test survey |
 | `GET /api/turing/stats` | Full Turing test analytics (optional `?job_group=` filter) |
 | `GET /api/turing/scenarios` | Scenarios without AI labels (used by survey form) |
-| `POST /api/acceptance/submit` | Submit AI Acceptance Survey (JSON: Part A fields + `likert_answers`) |
+| `POST /api/acceptance/submit` | Submit AI Acceptance Survey (JSON: Part A fields including `cluster` + `likert_answers` + `open_reflection`) |
 | `GET /api/acceptance/stats` | AI Acceptance Survey analytics (Part A distributions + Likert averages) |
 | `POST /api/reset` | Wipe all data from all tables (incl. acceptance_responses) |
 | `GET /api/export` | Export all data as JSON (incl. acceptance stats) |
@@ -102,7 +102,7 @@ The admin nav bar has **7 tabs** split into two visual groups (separated by `mar
 **Right group (right-aligned):**
 5. **AI vs Human** (🤖, pink) — Turing test live results: accuracy by job group/seniority/scenario, ratings, task trust chart; filterable by job group
 6. **AI Perspectives** (💬, cyan) — all 3 questions' word clouds and sentiments side-by-side
-7. **AI Acceptance** (📋, purple) — Part A demographic distributions + Parts B–F Likert averages
+7. **AI Acceptance** (📋, purple) — Part A demographic distributions + Parts B–D Likert averages
 
 **Status bar** (top-right of header): four pills in order — Total responses | AI vs Human count | AI Perspectives count | AI Acceptance count. Counts sourced from: AI vs Human = `turing_responses` row count; AI Perspectives = `sentiment_responses` rows for `question_index=0` (i.e. unique participants who answered at least Q1); AI Acceptance = `/api/acceptance/stats` `total_respondents`. Total = sum of all three.
 
@@ -112,7 +112,7 @@ The admin nav bar has **7 tabs** split into two visual groups (separated by `mar
 - `turing_responses`: one row per survey respondent (UUID, job group, seniority); `job_group` may be `"Other; <custom text>"` when participant selected "Other" and typed a description
 - `turing_answers`: one row per scenario per respondent (guess, correctness, 4 ratings 1–5)
 - `turing_tasks`: which AI tasks each respondent trusts (multi-select; one row per task)
-- `acceptance_responses`: one row per respondent — Part A fields as individual columns; `disciplines` stored as a single-element JSON array (discipline question is single-select; "Other" saves as `["Other; <role>"`]); `ai_tools` stored as a JSON array (multi-select); `likert_answers` stored as JSON object `{"B1": 3, ..., "F7": 5}` covering all 41 questions across Parts B–F
+- `acceptance_responses`: one row per respondent — Part A fields as individual columns; `cluster` stores the selected healthcare cluster (plain text; "Others; <text>" for free-text entry); `disciplines` stored as a single-element JSON array (single-select; "Other" saves as `["Other; <role>"]`); `seniority` stores the full branched tier label (e.g. `"Student (Medical Student)"`); `ai_tools` stored as a JSON array (multi-select); `likert_answers` stored as JSON object `{"B1": 3, ..., "D7": 5}` covering all 22 questions across Parts B–D; `open_reflection` stored as JSON object `{"G1": "...", "G2": "...", "G3": "...", "G4": "..."}` (all optional)
 - The `ai_index` field in `SCENARIOS` (0 or 1) indicates which response is AI-generated; this is **never** exposed to the survey frontend
 
 ## Completed Work
@@ -153,3 +153,4 @@ All planned refactor steps are done. Post-refactor additions:
 | 30 | spaCy-based `extract_words()`: lemmatisation + NOUN/VERB/ADJ POS filter + merged stop words; graceful fallback to Counter if spaCy unavailable | ✅ Done |
 | 31 | Admin dashboard poll interval changed from 3 s to 10 s (`setInterval` in `admin.html`); UI labels updated to match | ✅ Done |
 | 32 | AI Acceptance Survey Part A Q3 (discipline): changed to single-select; "Other" reveals inline free-text input; stored as `"Other; <role>"` in the `disciplines` JSON array; empty "Other" blocked with validation message | ✅ Done |
+| 33 | AI Acceptance Survey redesigned: Part A expanded to 9 questions (added cluster Q3, dynamic seniority Q5); Likert replaced with new Parts B–D (22 questions, `[discipline]` substituted client-side); Part G added (4 optional open-ended questions); DB schema updated with `cluster` and `open_reflection` columns; Excel export updated to include new fields | ✅ Done |

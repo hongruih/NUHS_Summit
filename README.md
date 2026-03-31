@@ -32,7 +32,7 @@ The app serves two audiences simultaneously:
 |---|---|---|
 | AI vs Human | `/survey/turing` | Read 5 clinical scenarios and guess which response was written by AI vs a real doctor; rate trust, empathy, safety, and usefulness |
 | AI Perspectives | `/survey/sentiment` | Answer 4 open-ended questions about AI in healthcare; responses are transcribed (mic or typed) and analysed for sentiment in real time |
-| AI Acceptance Survey | `/survey/acceptance` | 13-step structured survey — 8 biographical questions (Part A) followed by 41 Likert-scale statements across 5 thematic parts (B–F) |
+| AI Acceptance Survey | `/survey/acceptance` | 13-step structured survey — 9 biographical questions (Part A, including cluster and branching seniority) + 22 Likert-scale statements across 3 thematic parts (B–D, with discipline-specific wording) + 4 optional open-ended questions (Part G) |
 
 **Staff (admin)** access a 7-tab dashboard at `/admin` that shows live word clouds, sentiment distributions, Turing test accuracy analytics, and AI acceptance metrics. All data persists in SQLite and survives server restarts.
 
@@ -146,7 +146,7 @@ Copy `.env.example` to `.env` for local use. On Render/Railway, set these in the
 2. Choose a survey card:
    - **AI vs Human** — read 5 clinical scenarios; guess which response was written by AI; rate the AI response on trust, empathy, safety, and usefulness. If your job group is "Other", an inline text field appears to capture your actual role.
    - **AI Perspectives** — tap the mic or type answers to 4 open-ended questions; after each submission, a sentiment result (Positive / Neutral / Negative) is shown.
-   - **AI Acceptance Survey** — review the consent/intro screen, then work through 8 biographical questions followed by 41 Likert statements across 5 parts. The discipline question (Q3) is single-select; choosing "Other" reveals an inline text field to specify a role. On completion, a gift message prompts participants to show the screen at the Healthcare Redesign booth.
+   - **AI Acceptance Survey** — review the consent/intro screen, then work through 9 biographical questions (including cluster and a discipline-branching seniority picker), 22 Likert statements across Parts B–D (with `[discipline]`-personalised wording), and 4 optional open-ended reflection questions (Part G). On completion, a gift message prompts participants to show the screen at the Healthcare Redesign booth.
 3. All surveys are self-paced and fully mobile-responsive.
 
 ### As an Admin (Staff)
@@ -198,7 +198,7 @@ App/
 | 47–68 | `QUESTIONS` (4 open-ended) and `STOP_WORDS` |
 | 70–126 | `SCENARIOS` — 5 clinical Turing test cases with `ai_index` ground truth |
 | 128–133 | `JOB_GROUPS`, `SENIORITY_LEVELS`, `TRUST_TASKS` |
-| 134–221 | `ACCEPTANCE_PART_A` and `ACCEPTANCE_LIKERT` (Parts B–F, 41 questions) |
+| 134–208 | `ACCEPTANCE_PART_A` (8 fields; seniority is dynamic in JS) and `ACCEPTANCE_LIKERT` (Parts B–D, 22 questions with `[discipline]` placeholder) |
 | 223–299 | Database: `get_db()`, `init_db()` — 5 tables + migration |
 | 301–341 | Sentiment helpers: `sentiment()`, `extract_words()`, `get_entries()`, `stats_for()` |
 | 343–457 | `get_turing_stats()` — full analytics with optional job-group filter |
@@ -230,7 +230,7 @@ App/
 | `POST` | `/api/turing/submit` | Submit a completed Turing test — body: `{job_group, seniority, answers[], tasks[]}` |
 | `GET` | `/api/turing/stats` | Full Turing test analytics; optional `?job_group=` filter |
 | `GET` | `/api/turing/scenarios` | Scenarios without AI labels — used by the survey frontend |
-| `POST` | `/api/acceptance/submit` | Submit AI Acceptance Survey — body: `{part_a: {...}, likert_answers: {B1: 3, ...}}` |
+| `POST` | `/api/acceptance/submit` | Submit AI Acceptance Survey — body: `{part_a: {...}, likert_answers: {B1: 3, ...}, open_reflection: {G1: "...", ...}}` |
 | `GET` | `/api/acceptance/stats` | Acceptance survey analytics — Part A distributions + Likert averages |
 | `POST` | `/api/reset` | Wipe all data from all 5 tables |
 | `GET` | `/api/export` | Full JSON export of all data |
@@ -257,7 +257,7 @@ The admin dashboard (`/admin`) has **7 tabs** arranged in two visual groups sepa
 |---|---|
 | **🤖 AI vs Human** | Live Turing test results: hero stats (total respondents, overall accuracy, fooled %), accuracy bars by job group and seniority, per-scenario breakdown, average trust/empathy/safety/usefulness ratings, trusted AI tasks chart, recent respondents list; filterable by job group |
 | **💬 AI Perspectives** | All 3 questions' word clouds and sentiment distributions shown side-by-side |
-| **📋 AI Acceptance** | Part A demographic distributions (age, gender, disciplines, seniority, AI usage frequency, AI tools); Parts B–F Likert question averages with response counts |
+| **📋 AI Acceptance** | Part A demographic distributions (age, gender, cluster, disciplines, seniority, AI usage frequency, AI tools); Parts B–D Likert question averages with response counts |
 
 **Status bar** (top-right header, 4 pills):
 
@@ -332,15 +332,17 @@ One row per AI Acceptance Survey respondent.
 |---|---|---|
 | `participant_id` | TEXT | Short UUID (8 chars) |
 | `timestamp` | TEXT | ISO 8601 |
-| `age_group` | TEXT | Part A |
-| `gender` | TEXT | Part A |
-| `disciplines` | TEXT | Single-element JSON array e.g. `["Medicine"]` or `["Other; Data Scientist"]` (question is single-select; "Other" stores as `"Other; <role>"`) |
-| `years_healthcare` | TEXT | Part A |
-| `years_role` | TEXT | Part A |
-| `seniority` | TEXT | Part A |
-| `ai_frequency` | TEXT | Part A |
-| `ai_tools` | TEXT | JSON array of selected tool categories |
-| `likert_answers` | TEXT | JSON object e.g. `{"B1": 3, "B2": 4, ..., "F7": 5}` covering all 41 questions |
+| `age_group` | TEXT | Part A Q1 |
+| `gender` | TEXT | Part A Q2 |
+| `cluster` | TEXT | Part A Q3 — plain text; `"Others; <text>"` for free-text entry |
+| `disciplines` | TEXT | Part A Q4 — single-element JSON array e.g. `["Medicine"]` or `["Other; Data Scientist"]` |
+| `years_healthcare` | TEXT | Part A Q6 |
+| `years_role` | TEXT | Part A Q7 |
+| `seniority` | TEXT | Part A Q5 — full tier label e.g. `"Student (Medical Student)"`, derived from discipline at render time |
+| `ai_frequency` | TEXT | Part A Q8 |
+| `ai_tools` | TEXT | Part A Q9 — JSON array of selected tool categories (multi-select) |
+| `likert_answers` | TEXT | JSON object e.g. `{"B1": 3, "B2": 4, ..., "D7": 5}` covering all 22 questions across Parts B–D |
+| `open_reflection` | TEXT | JSON object e.g. `{"G1": "...", "G2": "...", "G3": "...", "G4": "..."}` — Part G optional free-text responses |
 
 > The `ai_index` field in `SCENARIOS` (0 or 1) records which response is AI-generated. It is **never** sent to the survey frontend — only used server-side to score answers.
 
@@ -414,19 +416,24 @@ Content-Type: application/json
   "part_a": {
     "age_group": "30–39",
     "gender": "Female",
+    "cluster": "National University Health System",
     "disciplines": ["Medicine"],
+    "seniority": "Senior (Resident Physician, Associate Consultant, Consultant, Senior Consultant)",
     "years_healthcare": "6–10 years",
     "years_role": "4–7 years",
-    "seniority": "Mid-level staff",
     "ai_frequency": "Sometimes",
     "ai_tools": ["Commercial AI (ChatGPT, Gemini, Claude)"]
   },
   "likert_answers": {
-    "B1": 4, "B2": 3, "B3": 5,
-    "C1": 2,
-    "D1": 3,
-    "E1": 4,
-    "F1": 3
+    "B1": 4, "B2": 3, "B3": 5, "B4": 4, "B5": 3, "B6": 4, "B7": 5,
+    "C1": 2, "C2": 3, "C3": 2, "C4": 3, "C5": 2, "C6": 5, "C7": 4, "C8": 4,
+    "D1": 3, "D2": 4, "D3": 3, "D4": 3, "D5": 4, "D6": 4, "D7": 5
+  },
+  "open_reflection": {
+    "G1": "I'd like AI to help with documentation and note-taking.",
+    "G2": "I worry about over-reliance reducing clinical judgement.",
+    "G3": "Better training and clear evidence of benefit.",
+    "G4": ""
   }
 }
 ```
@@ -455,7 +462,7 @@ Downloads a `.xlsx` file (`nuhs_summit_YYYYMMDD_HHMM.xlsx`) with three sheets:
 |---|---|---|
 | **Sentiment Responses** | Wide (one row per participant) | Participant ID + Q1–Q4 transcript, sentiment label, polarity + timestamp |
 | **Turing Test** | Wide (one row per respondent) | Participant ID, job group, seniority, trusted tasks + per-scenario correct/ratings |
-| **AI Acceptance Survey** | Wide (one row per respondent) | All Part A fields + one column per Likert question (full question text as header) |
+| **AI Acceptance Survey** | Wide (one row per respondent) | All Part A fields (incl. Cluster) + one column per Likert question (full question text as header, Parts B–D) + four Part G open-reflection columns |
 
 ---
 

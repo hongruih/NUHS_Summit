@@ -305,7 +305,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
   <div class="ov-card">
     <h3>Overall Sentiment</h3>
     <div class="big3"><div class="b3 gn"><span class="n" id="ovPos">0</span><span class="l">Positive</span></div><div class="b3 am"><span class="n" id="ovNeu">0</span><span class="l">Neutral</span></div><div class="b3 rd"><span class="n" id="ovNeg">0</span><span class="l">Negative</span></div></div>
-    <div class="avg" id="ovAvg">Avg polarity: 0 · Total: 0</div>
+    <div class="avg" id="ovAvg">Total: 0</div>
     <h3 style="margin-top:10px">Per-Question Breakdown</h3>
     <div class="pqg" id="ovPQ"></div>
   </div>
@@ -640,7 +640,7 @@ async function loadOv(){
       }
     }
     $('ovPos').textContent=a.stats.positive;$('ovNeu').textContent=a.stats.neutral;$('ovNeg').textContent=a.stats.negative;
-    $('ovAvg').textContent=`Avg polarity: ${a.stats.avg_polarity} · Total: ${a.stats.total}`;
+    $('ovAvg').textContent=`Total: ${a.stats.total}`;
     let h='';for(let i=0;i<QS.length;i++){let s=d[String(i)].stats;h+=`<div class="pqb q${i}"><h4>Q${i+1} · ${s.total} responses</h4><div class="pqn"><span class="g">${s.positive}</span><span class="a">${s.neutral}</span><span class="r">${s.negative}</span></div><div class="pqt">Avg: ${s.avg_polarity}</div></div>`}
     $('ovPQ').innerHTML=h;
     // Turing snapshot

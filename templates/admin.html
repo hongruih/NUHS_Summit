@@ -61,6 +61,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .ts-stat .n{font-size:1.4rem;font-weight:700;display:block;color:var(--pk)}
 .ts-stat .l{font-size:.58rem;font-family:'Space Mono',monospace;color:var(--t3)}
 
+/* ═══ AUTH GATE ═══ */
+#auth-gate{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center}
+#auth-gate.hidden{display:none}
+.ag-box{background:var(--c1);border:1px solid var(--bd);border-radius:var(--r);padding:36px 32px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:18px}
+.ag-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.ag-title{font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,var(--bl),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ag-sub{font-size:.78rem;color:var(--t2)}
+.ag-label{font-size:.75rem;font-weight:600;color:var(--t2);margin-bottom:5px;display:block}
+.ag-input{width:100%;padding:10px 12px;border-radius:var(--rs);border:1px solid var(--bd);background:var(--bg);font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--t1);outline:none;transition:.2s}
+.ag-input:focus{border-color:var(--bl);box-shadow:0 0 0 2px rgba(59,130,246,.12)}
+.ag-err{font-size:.72rem;color:var(--rd);min-height:1em}
+.ag-btn{width:100%;padding:11px;border:none;border-radius:var(--rs);background:linear-gradient(135deg,var(--bl),var(--cy));color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:.2s}
+.ag-btn:hover{opacity:.9}
+
 /* ═══ INPUT PANELS ═══ */
 .ip{display:grid;grid-template-columns:.7fr 1.3fr;min-height:calc(100vh - 110px)}
 .ip-l{padding:18px 22px;border-right:1px solid var(--bd);display:flex;flex-direction:column;gap:12px}
@@ -240,6 +254,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 .xpand:hover{color:var(--t1);border-color:var(--t2)}
 .ov-card,.ov-wc-card,.ts-card{position:relative}
 </style></head><body>
+
+<!-- ══════ AUTH GATE ══════ -->
+<div id="auth-gate">
+  <div class="ag-box">
+    <div class="ag-logo">
+      <img src="/static/HCRD.png" height="38" style="width:auto;flex-shrink:0">
+      <span class="ag-title">Admin Dashboard</span>
+    </div>
+    <p class="ag-sub">Enter the admin password to continue.</p>
+    <div>
+      <label class="ag-label" for="ag-pw">Password</label>
+      <input id="ag-pw" class="ag-input" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div id="ag-err" class="ag-err"></div>
+    <button class="ag-btn" onclick="agSubmit()">Unlock Dashboard</button>
+  </div>
+</div>
 
 <header class="hdr">
 <!-- Logo placeholder — swap <svg> for <img> with actual NUHS logo -->
@@ -811,5 +842,27 @@ setInterval(()=>{
 if(!HAS_SPEECH){for(let i=0;i<QN;i++)$(`noSp_${i}`).classList.add('vis')}
 for(let q=0;q<QN;q++){$(`tx_${q}`).addEventListener('input',()=>updateLivePreview(q))}
 newRespondent();
-updTot();loadOv();
+
+// ── Auth gate ──
+(function(){
+  const gate=$('auth-gate');
+  const pw_input=document.getElementById('ag-pw');
+  const errEl=document.getElementById('ag-err');
+  if(sessionStorage.getItem('adminAuth')==='1'){gate.classList.add('hidden');updTot();loadOv();return;}
+  // Enter key support
+  pw_input.addEventListener('keydown',e=>{if(e.key==='Enter')agSubmit();});
+  pw_input.focus();
+  window.agSubmit=function(){
+    errEl.textContent='';
+    if(pw_input.value==='Yipwenjun'){
+      sessionStorage.setItem('adminAuth','1');
+      gate.classList.add('hidden');
+      updTot();loadOv();
+    } else {
+      errEl.textContent='Incorrect password. Please try again.';
+      pw_input.value='';
+      pw_input.focus();
+    }
+  };
+})();
 </script></body></html>

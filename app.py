@@ -1,7 +1,7 @@
 """
 =============================================================================
   REAL-TIME SENTIMENT ANALYSIS & WORD CLOUD BOOTH TOOL  
-  For NUH AI Summit — Interactive Audience Engagement
+  For NUHS Summit — Interactive Audience Engagement
 =============================================================================
 
 
@@ -101,7 +101,7 @@ TURING_ITEMS = [
             "I feel like I'm failing, and maybe this is just who I am. What should I do?"
         ),
         "response": (
-            "I can see our effort towards making sustained weight loss and it sounds like "
+            "I can see your effort towards making sustained weight loss and it sounds like "
             "this cycle has impacted your own self perception. On the other hand, it seems "
             "that you also have had success in losing weight despite still figuring out ways "
             "to ensure it is maintained."
